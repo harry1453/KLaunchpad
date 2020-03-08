@@ -1,6 +1,9 @@
+@file:JvmName("LightAroundPressedPad")
+
 package com.harry1453.launchpad.examples
 
 import com.harry1453.launchpad.api.Color
+import com.harry1453.launchpad.api.Launchpad
 import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
 
 /**
@@ -8,7 +11,7 @@ import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
  */
 fun main() {
     val color = Color(0, 50, 255)
-    val launchpad = LaunchpadMk2(userMode = true)
+    val launchpad = Launchpad.connectToLaunchpadMK2(userMode = true)
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
     launchpad.setPadButtonListener { pad, pressed, _ ->
         val padAbove = launchpad.getPad(pad.gridX, pad.gridY + 1)
