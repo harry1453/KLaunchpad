@@ -7,7 +7,7 @@ data class MidiDeviceInfo(val name: String, val description: String, val vendor:
 interface MidiDevice : Closeable {
     fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MessageType)
     fun sendSysEx(bytes: ByteArray)
-
+    fun clock()
     fun setMessageListener(messageListener: (ByteArray) -> Unit)
 
     enum class MessageType {

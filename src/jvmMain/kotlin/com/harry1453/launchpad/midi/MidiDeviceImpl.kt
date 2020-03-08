@@ -50,6 +50,10 @@ class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputD
         output.send(SysexMessage(bytes, bytes.size), -1)
     }
 
+    override fun clock() {
+        output.send(ShortMessage(ShortMessage.TIMING_CLOCK), -1)
+    }
+
     override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
         this.messageListener = messageListener
     }

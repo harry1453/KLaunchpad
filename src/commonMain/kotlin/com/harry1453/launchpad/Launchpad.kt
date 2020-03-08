@@ -8,6 +8,7 @@ interface Launchpad : Closeable {
     fun setPadUpdateListener(listener: (pad: Pad, pressed: Boolean, velocity: UByte) -> Unit)
     fun setPadLightColour(pad: Pad, colour: Colour, channel: Channel = Channel.Channel1)
     fun clearPadLight(pad: Pad) = setPadLightColour(pad, Colour.BLACK)
+    fun flashLightBetween(pad: Pad, colour1: Colour, colour2: Colour)
 
     // Bulk light updating
     fun setPadLightColourBulk(padsAndColours: Iterable<Pair<Pad, Colour>>, mode: BulkUpdateMode = BulkUpdateMode.SET)
@@ -50,6 +51,8 @@ interface Launchpad : Closeable {
      */
     fun setTextScrollFinishedListener(listener: () -> Unit)
 
+    var autoClockEnabled: Boolean
+    var autoClockSpeed: Int
     fun clock()
 
     fun enterBootloader()
@@ -58,7 +61,7 @@ interface Launchpad : Closeable {
     fun mustFindPad(gridX: Int, gridY: Int): Pad = findPad(gridX, gridY) ?: error("Could not find pad at ($gridX, $gridY)")
 
     /*
-    TODO: Layout Selection, Faders, Bulk update LEDs (all variants), device enquiry, version enquiry
+    TODO: Faders, device enquiry, version enquiry
      */
 
     enum class BulkUpdateMode {

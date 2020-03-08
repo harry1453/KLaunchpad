@@ -9,13 +9,37 @@ import com.harry1453.launchpad.midi.MidiDevice
 import com.harry1453.launchpad.midi.openMidiDevice
 import com.harry1453.launchpad.util.parseHexString
 import com.harry1453.launchpad.util.plus
+import kotlinx.coroutines.*
 
 class LaunchpadMk2(private var userMode: Boolean = false) : Launchpad {
     private val midiDevice = openMidiDevice { it.name.toLowerCase().contains("launchpad mk2") }
         .apply { setMessageListener(this@LaunchpadMk2::onMidiMessage) }
 
     init {
+        // Initialize Launchpad
         if (userMode) enterUserMode() else enterSessionMode()
+        stopScrollingText()
+        clearAllPads()
+    }
+
+    private var autoClockJob: Job? = null
+    override var autoClockEnabled: Boolean = false
+        set(newSetting) {
+            if (newSetting) {
+                startAutoClock()
+            } else {
+                autoClockJob?.cancel()
+            }
+            field = newSetting
+        }
+
+    private fun startAutoClock() {
+        autoClockJob = GlobalScope.launch {
+            while(isActive) {
+                delay(2500.toLong() / autoClockSpeed)
+                midiDevice.sendSysEx(sysExMessageClock)
+            }
+        }
     }
 
     private var padUpdateListener: ((pad: Pad, pressed: Boolean, velocity: UByte) -> Unit)? = null
@@ -56,6 +80,11 @@ class LaunchpadMk2(private var userMode: Boolean = false) : Launchpad {
     override fun setPadLightColour(pad: Pad, colour: Colour, channel: Channel) {
         require(pad is LaunchpadMk2Pad)
         midiDevice.sendMessage(channel.channelId, if (userMode) pad.userMidiCode else pad.sessionMidiCode, colour.toVelocity(), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+    }
+
+    override fun flashLightBetween(pad: Pad, colour1: Colour, colour2: Colour) {
+        setPadLightColour(pad, colour1, Channel.Channel1)
+        setPadLightColour(pad, colour2, Channel.Channel2)
     }
 
     override fun setPadLightColourBulk(padsAndColours: Iterable<Pair<Pad, Colour>>, mode: Launchpad.BulkUpdateMode) {
@@ -119,8 +148,14 @@ class LaunchpadMk2(private var userMode: Boolean = false) : Launchpad {
         this.scrollTextFinishedListener = listener
     }
 
+    override var autoClockSpeed: Int = 120 // Launchpad default
+        set(newBpm) {
+            require(newBpm in 40..240) { "Launchpad MK2 only supports BPM between 40 and 240"}
+            field = newBpm
+        }
+
     override fun clock() {
-        TODO("Not yet implemented")
+        midiDevice.clock()
     }
 
     override fun enterBootloader() {
@@ -132,6 +167,7 @@ class LaunchpadMk2(private var userMode: Boolean = false) : Launchpad {
     }
 
     override fun close() {
+        autoClockJob?.cancel()
         midiDevice.close()
     }
 
@@ -157,5 +193,6 @@ class LaunchpadMk2(private var userMode: Boolean = false) : Launchpad {
         private val sysExMessageScrollTextComplete = "F0002029021815F7".parseHexString()
 
         private val sysExMessageEnterBootloader = "F000202900710069F7".parseHexString()
+        private val sysExMessageClock = "F8".parseHexString()
     }
 }

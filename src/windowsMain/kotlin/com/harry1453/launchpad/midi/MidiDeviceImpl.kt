@@ -33,6 +33,10 @@ class MidiDeviceImpl : MidiDevice {
         TODO("Not yet implemented")
     }
 
+    override fun clock() {
+        TODO("Not yet implemented")
+    }
+
     override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
         TODO("Not yet implemented")
     }
