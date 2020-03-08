@@ -1,10 +1,8 @@
-package com.harry1453.launchpad.midi
-
-import com.harry1453.launchpad.util.Closeable
+package com.harry1453.launchpad.api
 
 data class MidiDeviceInfo(val name: String, val description: String, val vendor: String, val version: String)
 
-interface MidiDevice : Closeable {
+interface MidiDevice : Closable {
     fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MessageType)
     fun sendSysEx(bytes: ByteArray)
     fun clock()

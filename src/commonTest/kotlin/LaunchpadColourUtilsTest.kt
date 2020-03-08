@@ -1,10 +1,11 @@
-import com.harry1453.launchpad.colour.rgbToVelocity
+import com.harry1453.launchpad.api.Color
+import com.harry1453.launchpad.impl.toVelocity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class LaunchpadColourUtilsTest {
+class LaunchpadcolorUtilsTest {
     @Test
-    fun testColourToVelocity() {
-        assertEquals(0, rgbToVelocity(0, 0, 0))
+    fun testcolorToVelocity() {
+        assertEquals(0, Color(0, 0, 0).toVelocity())
     }
 }

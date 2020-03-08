@@ -1,23 +1,22 @@
 package com.harry1453.launchpad.examples
 
-import com.harry1453.launchpad.Launchpad
-import com.harry1453.launchpad.colour.Colour
-import com.harry1453.launchpad.impl.LaunchpadMk2
+import com.harry1453.launchpad.api.Color
+import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
 
 /**
  * This example demonstrates updating rows and columns.
  */
 fun main() {
-    val colour = Colour(0, 50, 255)
+    val color = Color(0, 50, 255)
     val launchpad = LaunchpadMk2()
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
-    launchpad.setPadUpdateListener { pad, pressed, _ ->
+    launchpad.setPadButtonListener { pad, pressed, _ ->
         if (pressed) {
-            launchpad.setRowColourBulk(listOf(Pair(pad.gridY, colour)))
-            launchpad.setColumnColourBulk(listOf(Pair(pad.gridX, colour)))
+            launchpad.batchSetRowLights(listOf(Pair(pad.gridY, color)))
+            launchpad.batchSetColumnLights(listOf(Pair(pad.gridX, color)))
         } else {
-            launchpad.setRowColourBulk(listOf(Pair(pad.gridY, Colour.BLACK)))
-            launchpad.setColumnColourBulk(listOf(Pair(pad.gridX, Colour.BLACK)))
+            launchpad.batchSetRowLights(listOf(Pair(pad.gridY, Color.BLACK)))
+            launchpad.batchSetColumnLights(listOf(Pair(pad.gridX, Color.BLACK)))
         }
     }
 }

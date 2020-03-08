@@ -1,5 +1,7 @@
-package com.harry1453.launchpad.midi
+package com.harry1453.launchpad.api
 
+import com.harry1453.launchpad.api.MidiDevice
+import com.harry1453.launchpad.api.MidiDeviceInfo
 import kotlinx.cinterop.*
 import platform.windows.*
 

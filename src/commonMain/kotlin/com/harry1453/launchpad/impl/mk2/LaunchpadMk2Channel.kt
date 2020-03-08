@@ -1,21 +1,20 @@
-package com.harry1453.launchpad
+package com.harry1453.launchpad.impl.mk2
 
-// TODO this is not abstracted to allow for different launchpads
-enum class Channel {
+internal enum class LaunchpadMk2Channel {
     /**
      * Session Channel
       */
     Channel1,
 
     /**
-     * Flashing channel. When a colour is set on this channel, the launchpad will flash the LED between the previous colour and the new colour.
-     * This can be stopped by setting a colour using channel 1.
+     * Flashing channel. When a color is set on this channel, the launchpad will flash the LED between the previous color and the new color.
+     * This can be stopped by setting a color using channel 1.
      */
     Channel2,
 
     /**
-     * Pulsing channel. When a colour is set on this channel, the launchpad will pulse the LED between 100% and 25% brighness.
-     * This can be stopped by setting a colour using channel 1.
+     * Pulsing channel. When a color is set on this channel, the launchpad will pulse the LED between 100% and 25% brighness.
+     * This can be stopped by setting a color using channel 1.
      */
     Channel3,
     Channel4,

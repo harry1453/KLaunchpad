@@ -1,12 +1,16 @@
-package com.harry1453.launchpad.midi
+package com.harry1453.launchpad.api
 
 import javax.sound.midi.*
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 
 actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it, MidiDeviceInfo(it.name, it.description, it.vendor, it.version)) }
+    val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it,
+        MidiDeviceInfo(it.name, it.description, it.vendor, it.version)
+    ) }
         .filter { deviceFilter(it.second) }.getOrNull(0)?.first ?: error("Could not find device")
-    val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it, MidiDeviceInfo(it.name, it.description, it.vendor, it.version)) }
+    val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it,
+        MidiDeviceInfo(it.name, it.description, it.vendor, it.version)
+    ) }
         .filter { deviceFilter(it.second) }.getOrNull(1)?.first ?: error("Could not find device")
     val firstDevice: JvmMidiDevice = MidiSystem.getMidiDevice(firstDeviceInfo)
     val secondDevice: JvmMidiDevice = MidiSystem.getMidiDevice(secondDeviceInfo)
@@ -25,7 +29,8 @@ actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): Mid
     return MidiDeviceImpl(inputDevice, outputDevice)
 }
 
-class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputDevice: JvmMidiDevice) : Receiver, MidiDevice {
+class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputDevice: JvmMidiDevice) : Receiver,
+    MidiDevice {
     private val output = outputDevice.receiver
     private val input = inputDevice.transmitter
 

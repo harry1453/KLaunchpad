@@ -1,12 +1,12 @@
-import com.harry1453.launchpad.colour.Colour
-import com.harry1453.launchpad.impl.LaunchpadMk2
+import com.harry1453.launchpad.api.Color
+import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
 
 fun main() {
-    val colour = Colour(0, 50, 255)
+    val color = Color(0, 50, 255)
     val launchpad = LaunchpadMk2()
-    launchpad.setPadUpdateListener { pad, pressed, _ ->
+    launchpad.setPadButtonListener { pad, pressed, _ ->
         if (pressed) {
-            launchpad.setPadLightColour(pad, colour)
+            launchpad.setPadLight(pad, color)
         } else {
             launchpad.clearPadLight(pad)
         }

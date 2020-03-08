@@ -1,9 +1,9 @@
-package com.harry1453.launchpad.impl
+package com.harry1453.launchpad.impl.mk2
 
-import com.harry1453.launchpad.Pad
+import com.harry1453.launchpad.api.Pad
 
 /**
- * Launchpad MK2 is like this:
+ * Launchpad MK2 grid is like this:
  *
  * T1 T2 T3 T4 T5 T6 T7 T8
  * H1 H2 H3 H4 H5 H6 H7 H8 R1
@@ -14,6 +14,8 @@ import com.harry1453.launchpad.Pad
  * C1 C2 C3 C4 C5 C6 C7 C8 R6
  * B1 B2 B3 B4 B5 B6 B7 B8 D7
  * A1 A2 A3 A4 A5 A6 A7 A8 D8
+ *
+ * where A1 is (0, 0) and H8 is (7, 7)
  */
 internal enum class LaunchpadMk2Pad : Pad {
     T1, T2, T3, T4, T5, T6, T7, T8,
@@ -34,7 +36,7 @@ internal enum class LaunchpadMk2Pad : Pad {
     val isControlChange: Boolean
 
     init {
-        // Name parser determines code
+        // Name parser determines MIDI codes
         val letter = name[0]
         val number = name[1].toString().toByte() - 1
         require(number in 0..7) { "Invalid X Grid position: ${number + 1}" }
