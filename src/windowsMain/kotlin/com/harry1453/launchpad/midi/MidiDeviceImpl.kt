@@ -4,6 +4,7 @@ import kotlinx.cinterop.*
 import platform.windows.*
 
 actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+    // TODO calling any of the midi functions breaks the linker...
     val inputDeviceCount = midiInGetNumDevs().toInt()
     val outputDeviceCount = midiOutGetNumDevs().toInt()
     for (i in 0 until inputDeviceCount) {

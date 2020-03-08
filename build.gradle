@@ -25,6 +25,14 @@ kotlin {
     }
 
     sourceSets {
+        all {
+            languageSettings {
+                useExperimentalAnnotation('kotlin.ExperimentalStdlibApi')
+                useExperimentalAnnotation('kotlin.contracts.ExperimentalContracts')
+                useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+            }
+        }
+
         commonMain {
             dependencies {
                 implementation kotlin('stdlib-common')
