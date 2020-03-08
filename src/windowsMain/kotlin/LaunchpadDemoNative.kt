@@ -1,5 +1,14 @@
-import com.harry1453.launchpad.impl.LaunchpadMk2Pads
+import com.harry1453.launchpad.colour.Colour
+import com.harry1453.launchpad.impl.LaunchpadMk2
 
 fun main() {
-    println(LaunchpadMk2Pads.values().toString())
+    val colour = Colour(0, 50, 255)
+    val launchpad = LaunchpadMk2()
+    launchpad.setPadUpdateListener { pad, pressed, _ ->
+        if (pressed) {
+            launchpad.setPadLightColour(pad, colour)
+        } else {
+            launchpad.clearPadLight(pad)
+        }
+    }
 }

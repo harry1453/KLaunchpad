@@ -4,7 +4,7 @@ import java.lang.Exception
 import javax.sound.midi.*
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 
-actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean, noinline messageCallback: (ByteArray) -> Unit): MidiDevice {
+actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
     val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it, MidiDeviceInfo(it.name, it.description, it.vendor, it.version)) }
         .filter { deviceFilter(it.second) }.getOrNull(0)?.first ?: error("Could not find device")
     val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it, MidiDeviceInfo(it.name, it.description, it.vendor, it.version)) }
@@ -23,12 +23,14 @@ actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean, noin
     }
     firstDevice.open()
     secondDevice.open()
-    return MidiDeviceImpl(inputDevice, outputDevice, messageCallback)
+    return MidiDeviceImpl(inputDevice, outputDevice)
 }
 
-class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputDevice: JvmMidiDevice, private val messageCallback: (ByteArray) -> Unit) : Receiver, MidiDevice {
+class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputDevice: JvmMidiDevice) : Receiver, MidiDevice {
     private val output = outputDevice.receiver
     private val input = inputDevice.transmitter
+
+    private var messageListener: ((ByteArray) -> Unit)? = null
 
     init {
         input.receiver = this
@@ -49,9 +51,13 @@ class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputD
         output.send(SysexMessage(bytes, bytes.size), -1)
     }
 
+    override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
+        this.messageListener = messageListener
+    }
+
     override fun send(message: MidiMessage, timeStamp: Long) {
         try {
-            messageCallback(message.message)
+            messageListener?.invoke(message.message)
         } catch (e: Exception) {
             e.printStackTrace()
         }

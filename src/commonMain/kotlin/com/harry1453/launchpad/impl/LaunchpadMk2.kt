@@ -10,7 +10,8 @@ import com.harry1453.launchpad.midi.openMidiDevice
 import com.harry1453.launchpad.util.parseHexString
 
 class LaunchpadMk2 : Launchpad {
-    private val midiDevice = openMidiDevice({ it.name.toLowerCase().contains("launchpad") }, this::onMidiMessage)
+    private val midiDevice = openMidiDevice { it.name.toLowerCase().contains("launchpad") }
+        .apply { setMessageListener(this@LaunchpadMk2::onMidiMessage) }
 
     private var padUpdateListener: ((pad: Pad, pressed: Boolean, velocity: UByte) -> Unit)? = null
 

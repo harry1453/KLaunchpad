@@ -8,6 +8,8 @@ interface MidiDevice : Closeable {
     fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MessageType)
     fun sendSysEx(bytes: ByteArray)
 
+    fun setMessageListener(messageListener: (ByteArray) -> Unit)
+
     enum class MessageType {
         NoteOn,
         NoteOff,
@@ -15,4 +17,4 @@ interface MidiDevice : Closeable {
     }
 }
 
-expect inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean, noinline messageCallback: (ByteArray) -> Unit): MidiDevice
+expect inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice
