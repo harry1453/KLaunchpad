@@ -34,12 +34,46 @@ class LaunchpadMk2 : Launchpad {
         }
     }
 
+    private fun Colour.toVelocity(): Int {
+        return rgbToVelocity(this)
+    }
+
     override fun setPadUpdateListener(listener: (pad: Pad, pressed: Boolean, velocity: UByte) -> Unit) {
         this.padUpdateListener = listener
     }
 
     override fun setPadLightColour(pad: Pad, colour: Colour, channel: Channel) {
-        midiDevice.sendMessage(channel.channelId, pad.midiCode, rgbToVelocity(colour), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+        midiDevice.sendMessage(channel.channelId, pad.midiCode, colour.toVelocity(), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+    }
+
+    override fun setPadLightColourBulk(padsAndColours: Iterable<Pair<Pad, Colour>>, mode: Launchpad.BulkUpdateMode) {
+        midiDevice.sendSysEx(when(mode) {
+            Launchpad.BulkUpdateMode.SET -> padsAndColours.map { sysExMessageSetPad + it.first.midiCode + it.second.toVelocity() + 0xF7 }
+            Launchpad.BulkUpdateMode.FLASH -> padsAndColours.map { sysExMessageFlashPad + it.first.midiCode + it.second.toVelocity() + 0xF7 }
+            Launchpad.BulkUpdateMode.PULSE -> padsAndColours.map { sysExMessagePulsePad + it.first.midiCode + it.second.toVelocity() + 0xF7 }
+            Launchpad.BulkUpdateMode.SET_RGB -> padsAndColours.map {
+                val rgb = (it.second.r / 4.toUByte()).toByte() + (it.second.g / 4.toUByte()).toByte() + (it.second.b / 4.toUByte()).toByte()
+                sysExMessageSetPadRgb + it.first.midiCode + rgb + 0xF7
+            }
+        }.reduce { acc, bytes -> acc + bytes })
+    }
+
+    override fun setRowColourBulk(rowsAndColours: Iterable<Pair<Int, Colour>>) {
+        // TODO check sizes and indexes
+        midiDevice.sendSysEx(rowsAndColours.map {
+            sysExMessageSetRow + it.first.toByte() + it.second.toVelocity() + 0xF7
+        }.reduce { acc, bytes -> acc + bytes })
+    }
+
+    override fun setColumnColourBulk(columnsAndColours: Iterable<Pair<Int, Colour>>) {
+        // TODO check sizes and indexes
+        midiDevice.sendSysEx(columnsAndColours.map {
+            sysExMessageSetColumn + it.first.toByte() + it.second.toVelocity() + 0xF7
+        }.reduce { acc, bytes -> acc + bytes })
+    }
+
+    override fun setAllPads(colour: Colour) {
+        midiDevice.sendSysEx(sysExMessageSetAllPads + colour.toVelocity() + 0xF7)
     }
 
     override fun scrollText(message: String, colour: Colour, loop: Boolean) {
@@ -48,7 +82,7 @@ class LaunchpadMk2 : Launchpad {
             val speed = matchResult.groupValues[1].toInt()
             speed.toChar().toString()
         }.encodeToByteArray()
-        midiDevice.sendSysEx(sysExMessageScrollText + byteArrayOf(rgbToVelocity(colour).toByte(), (if (loop) 0x01 else 0x00).toByte()) + encodedMessage + 0xF7)
+        midiDevice.sendSysEx(sysExMessageScrollText + byteArrayOf(colour.toVelocity().toByte(), (if (loop) 0x01 else 0x00).toByte()) + encodedMessage + 0xF7)
     }
 
     override fun stopScrollingText() {
@@ -86,9 +120,17 @@ class LaunchpadMk2 : Launchpad {
     companion object {
         val speedCommandRegex = Regex("\\{s([1-7])}")
 
-        private val sysExMessageChangeLayout = "F0002029021822".parseHexString()
+        private val sysExHeader = "F00020290218".parseHexString()
+        private val sysExMessageSetPad = sysExHeader + 0x0A
+        private val sysExMessageSetPadRgb = sysExHeader + 0x0B
+        private val sysExMessageSetColumn = sysExHeader + 0x0C
+        private val sysExMessageSetRow = sysExHeader + 0x0D
+        private val sysExMessageSetAllPads = sysExHeader + 0x0E
+        private val sysExMessageFlashPad = sysExHeader + 0x23
+        private val sysExMessagePulsePad = sysExHeader + 0x28
+        private val sysExMessageChangeLayout = sysExHeader + 0x22
         private val sysExMessageChangeLayoutToSession = sysExMessageChangeLayout + 0x00 + 0xF7
-        private val sysExMessageScrollText = "F0002029021814".parseHexString()
+        private val sysExMessageScrollText = sysExHeader + 0x14
         private val sysExMessageStopScrollingText = sysExMessageScrollText + 0x00 + 0xF7
         private val sysExMessageScrollTextComplete = "F0002029021815F7".parseHexString()
         private val sysExMessageEnterBootloader = "F000202900710069F7".parseHexString()
