@@ -10,12 +10,12 @@ import com.harry1453.launchpad.midi.openMidiDevice
 import com.harry1453.launchpad.util.parseHexString
 import com.harry1453.launchpad.util.plus
 
-class LaunchpadMk2 : Launchpad {
+class LaunchpadMk2(private var userMode: Boolean = false) : Launchpad {
     private val midiDevice = openMidiDevice { it.name.toLowerCase().contains("launchpad mk2") }
         .apply { setMessageListener(this@LaunchpadMk2::onMidiMessage) }
 
     init {
-        enterSessionMode()
+        if (userMode) enterUserMode() else enterSessionMode()
     }
 
     private var padUpdateListener: ((pad: Pad, pressed: Boolean, velocity: UByte) -> Unit)? = null
@@ -26,7 +26,12 @@ class LaunchpadMk2 : Launchpad {
 
     private fun onMidiMessage(midiMessage: ByteArray) {
         if (midiMessage.size == 3) {
-            val pad = LaunchpadMk2Pads.findPad(midiMessage[1].toInt(), midiMessage[0] == 176.toByte()) ?: return
+            val padCode = midiMessage[1].toInt()
+            val pad = when {
+                midiMessage[0].toUByte().toInt() in 0xB0..0xBF -> LaunchpadMk2Pad.CONTROL_CHANGE_PADS[padCode]
+                userMode -> LaunchpadMk2Pad.USER_MODE_PADS[padCode]
+                else -> LaunchpadMk2Pad.SESSION_MODE_PADS[padCode]
+            } ?: return
             val pressed = midiMessage[2] != 0.toByte()
             padUpdateListener?.invoke(pad, pressed, midiMessage[2].toUByte())
         } else if (midiMessage.contentEquals(sysExMessageScrollTextComplete)) {
@@ -38,22 +43,29 @@ class LaunchpadMk2 : Launchpad {
         return rgbToVelocity(this)
     }
 
+    private val Pad.sessionMidiCode: Int
+        get() {
+            require(this is LaunchpadMk2Pad)
+            return this.sessionMidiCode
+        }
+
     override fun setPadUpdateListener(listener: (pad: Pad, pressed: Boolean, velocity: UByte) -> Unit) {
         this.padUpdateListener = listener
     }
 
     override fun setPadLightColour(pad: Pad, colour: Colour, channel: Channel) {
-        midiDevice.sendMessage(channel.channelId, pad.midiCode, colour.toVelocity(), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+        require(pad is LaunchpadMk2Pad)
+        midiDevice.sendMessage(channel.channelId, if (userMode) pad.userMidiCode else pad.sessionMidiCode, colour.toVelocity(), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
     }
 
     override fun setPadLightColourBulk(padsAndColours: Iterable<Pair<Pad, Colour>>, mode: Launchpad.BulkUpdateMode) {
         midiDevice.sendSysEx(when(mode) {
-            Launchpad.BulkUpdateMode.SET -> padsAndColours.map { sysExMessageSetPad + it.first.midiCode + it.second.toVelocity() + 0xF7 }
-            Launchpad.BulkUpdateMode.FLASH -> padsAndColours.map { sysExMessageFlashPad + it.first.midiCode + it.second.toVelocity() + 0xF7 }
-            Launchpad.BulkUpdateMode.PULSE -> padsAndColours.map { sysExMessagePulsePad + it.first.midiCode + it.second.toVelocity() + 0xF7 }
+            Launchpad.BulkUpdateMode.SET -> padsAndColours.map { sysExMessageSetPad + it.first.sessionMidiCode + it.second.toVelocity() + 0xF7 }
+            Launchpad.BulkUpdateMode.FLASH -> padsAndColours.map { sysExMessageFlashPad + it.first.sessionMidiCode + it.second.toVelocity() + 0xF7 }
+            Launchpad.BulkUpdateMode.PULSE -> padsAndColours.map { sysExMessagePulsePad + it.first.sessionMidiCode + it.second.toVelocity() + 0xF7 }
             Launchpad.BulkUpdateMode.SET_RGB -> padsAndColours.map {
                 val rgb = (it.second.r / 4.toUByte()).toByte() + (it.second.g / 4.toUByte()).toByte() + (it.second.b / 4.toUByte()).toByte()
-                sysExMessageSetPadRgb + it.first.midiCode + rgb + 0xF7
+                sysExMessageSetPadRgb + it.first.sessionMidiCode + rgb + 0xF7
             }
         }.reduce { acc, bytes -> acc + bytes })
     }
@@ -94,7 +106,13 @@ class LaunchpadMk2 : Launchpad {
     }
 
     private fun enterSessionMode() {
+        userMode = false
         midiDevice.sendSysEx(sysExMessageChangeLayoutToSession)
+    }
+
+    private fun enterUserMode() {
+        userMode = true
+        midiDevice.sendSysEx(sysExMessageChangeLayoutToUser)
     }
 
     override fun setTextScrollFinishedListener(listener: () -> Unit) {
@@ -110,7 +128,7 @@ class LaunchpadMk2 : Launchpad {
     }
 
     override fun findPad(gridX: Int, gridY: Int): Pad? {
-        return LaunchpadMk2Pads.findPad(gridX, gridY)
+        return LaunchpadMk2Pad.findPad(gridX, gridY)
     }
 
     override fun close() {
@@ -121,6 +139,7 @@ class LaunchpadMk2 : Launchpad {
         val speedCommandRegex = Regex("\\{s([1-7])}")
 
         private val sysExHeader = "F00020290218".parseHexString()
+
         private val sysExMessageSetPad = sysExHeader + 0x0A
         private val sysExMessageSetPadRgb = sysExHeader + 0x0B
         private val sysExMessageSetColumn = sysExHeader + 0x0C
@@ -128,11 +147,15 @@ class LaunchpadMk2 : Launchpad {
         private val sysExMessageSetAllPads = sysExHeader + 0x0E
         private val sysExMessageFlashPad = sysExHeader + 0x23
         private val sysExMessagePulsePad = sysExHeader + 0x28
+
         private val sysExMessageChangeLayout = sysExHeader + 0x22
         private val sysExMessageChangeLayoutToSession = sysExMessageChangeLayout + 0x00 + 0xF7
+        private val sysExMessageChangeLayoutToUser = sysExMessageChangeLayout + 0x01 + 0xF7
+
         private val sysExMessageScrollText = sysExHeader + 0x14
         private val sysExMessageStopScrollingText = sysExMessageScrollText + 0x00 + 0xF7
         private val sysExMessageScrollTextComplete = "F0002029021815F7".parseHexString()
+
         private val sysExMessageEnterBootloader = "F000202900710069F7".parseHexString()
     }
 }

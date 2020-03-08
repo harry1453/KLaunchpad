@@ -9,7 +9,7 @@ import com.harry1453.launchpad.impl.LaunchpadMk2
  */
 fun main() {
     val colour = Colour(0, 50, 255)
-    val launchpad = LaunchpadMk2()
+    val launchpad = LaunchpadMk2(userMode = true)
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
     launchpad.setPadUpdateListener { pad, pressed, _ ->
         val padAbove = launchpad.findPad(pad.gridX, pad.gridY + 1)
@@ -18,7 +18,7 @@ fun main() {
         val padRight = launchpad.findPad(pad.gridX + 1, pad.gridY)
         val pads = listOfNotNull(pad, padAbove, padBelow, padLeft, padRight)
         if (pressed) {
-            launchpad.setPadLightColourBulk(pads.map { Pair(it, colour) }, Launchpad.BulkUpdateMode.PULSE)
+            launchpad.setPadLightColourBulk(pads.map { Pair(it, colour) }, Launchpad.BulkUpdateMode.SET)
         } else {
             launchpad.setPadLightColourBulk(pads.map { Pair(it, Colour.BLACK) })
         }

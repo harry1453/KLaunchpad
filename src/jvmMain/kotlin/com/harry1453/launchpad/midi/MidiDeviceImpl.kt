@@ -1,6 +1,5 @@
 package com.harry1453.launchpad.midi
 
-import java.lang.Exception
 import javax.sound.midi.*
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 

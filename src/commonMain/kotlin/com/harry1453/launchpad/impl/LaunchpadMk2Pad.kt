@@ -15,7 +15,7 @@ import com.harry1453.launchpad.Pad
  * B1 B2 B3 B4 B5 B6 B7 B8 D7
  * A1 A2 A3 A4 A5 A6 A7 A8 D8
  */
-internal enum class LaunchpadMk2Pads : Pad {
+internal enum class LaunchpadMk2Pad : Pad {
     T1, T2, T3, T4, T5, T6, T7, T8,
     H1, H2, H3, H4, H5, H6, H7, H8, R1,
     G1, G2, G3, G4, G5, G6, G7, G8, R2,
@@ -29,8 +29,9 @@ internal enum class LaunchpadMk2Pads : Pad {
 
     override val gridX: Int
     override val gridY: Int
-    override val midiCode: Int
-    override val isControlChange: Boolean
+    val sessionMidiCode: Int
+    val userMidiCode: Int
+    val isControlChange: Boolean
 
     init {
         // Name parser determines code
@@ -40,7 +41,8 @@ internal enum class LaunchpadMk2Pads : Pad {
 
         isControlChange = letter == 'T'
         if (isControlChange) {
-            midiCode = 104 + number
+            sessionMidiCode = 104 + number
+            userMidiCode = 104 + number
             gridY = 8
             gridX = number
         } else {
@@ -64,7 +66,12 @@ internal enum class LaunchpadMk2Pads : Pad {
             } else {
                 number
             }
-            midiCode = gridY * 10 + gridX + 11
+            sessionMidiCode = gridY * 10 + gridX + 11
+            userMidiCode = if (gridX == 8) {
+                107 - gridY
+            } else {
+                (if (gridX >= 4) 68 else 36) + gridY * 4 + gridX % 4
+            }
         }
     }
 
@@ -73,23 +80,24 @@ internal enum class LaunchpadMk2Pads : Pad {
     }
 
     companion object {
-        private val CONTROL_CHANGE_PADS: Map<Int, Pad> = values()
+        internal val CONTROL_CHANGE_PADS: Map<Int, Pad> = values()
             .filter { it.isControlChange }
-            .map { it.midiCode to it }
+            .map { it.sessionMidiCode to it }
             .toMap()
 
-        private val REGULAR_PADS: Map<Int, Pad> = values()
+        internal val SESSION_MODE_PADS: Map<Int, Pad> = values()
             .filter { !it.isControlChange }
-            .map { it.midiCode to it }
+            .map { it.sessionMidiCode to it }
+            .toMap()
+
+        internal val USER_MODE_PADS: Map<Int, Pad> = values()
+            .filter { !it.isControlChange }
+            .map { it.userMidiCode to it }
             .toMap()
 
         private val GRID_PADS: Map<Pair<Int, Int>, Pad> = values()
             .map { Pair(it.gridX, it.gridY) to it }
             .toMap()
-
-        fun findPad(code: Int, controlChange: Boolean): Pad? {
-            return (if (controlChange) CONTROL_CHANGE_PADS else REGULAR_PADS)[code]
-        }
 
         fun findPad(gridX: Int, gridY: Int): Pad? {
             return GRID_PADS[Pair(gridX, gridY)]

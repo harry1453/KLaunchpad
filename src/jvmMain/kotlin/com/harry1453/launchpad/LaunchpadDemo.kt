@@ -4,17 +4,20 @@ package com.harry1453.launchpad
 
 import com.harry1453.launchpad.colour.Colour
 import com.harry1453.launchpad.impl.LaunchpadMk2
-import com.harry1453.launchpad.impl.LaunchpadMk2Pads
+import com.harry1453.launchpad.impl.LaunchpadMk2Pad
 
 fun main() {
     val colour = Colour(0, 50, 255)
     val launchpad = LaunchpadMk2()
-    launchpad.setPadUpdateListener { pad, pressed, _ ->
+    launchpad.setPadUpdateListener { _, pressed, _ ->
         if (pressed) {
-            launchpad.setPadLightColourBulk(listOf(Pair(pad, colour), Pair(LaunchpadMk2Pads.T8, colour)), Launchpad.BulkUpdateMode.FLASH)
+            for (pad in LaunchpadMk2Pad.values()) {
+                launchpad.setPadLightColour(pad, colour)
+            }
         } else {
-            launchpad.clearPadLight(pad)
-            launchpad.clearPadLight(LaunchpadMk2Pads.T8)
+            for (pad in LaunchpadMk2Pad.values()) {
+                launchpad.setPadLightColour(pad, Colour.BLACK)
+            }
         }
     }
 }
