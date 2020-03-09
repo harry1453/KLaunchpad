@@ -2,6 +2,8 @@ package com.harry1453.launchpad.api
 
 import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
 
+// TODO Support more Launchpads!
+
 /**
  * A Launchpad is a grid of [Pad]s, which are comprised of an LED and a Button.
  * The grid is indexed by the bottom left pad of the main grid area being (0,0),
@@ -172,6 +174,29 @@ interface Launchpad : Closable {
      * @return The Pad, or `null` if there is no pad in that position. Remember that it is not guaranteed that every grid position contains a pad, even if it lies within the boundaries of the grid.
      */
     fun getPad(x: Int, y: Int): Pad?
+
+    /**
+     * The maximum number of faders the Launchpad can display at once
+     */
+    val maxNumberOfFaders: Int
+
+    /**
+     * Switch to the Launchpad's fader view. This turns the main grid area into a bank of up to [maxNumberOfFaders].
+     * If [bipolar], these faders will be bipolar, like pan faders. Else, they will be unipolar, like volume faders.
+     *
+     * Entering Fader View this clears all pad LEDs, and will prevent you from setting main grid area Pad LEDs
+     * and listening for main grid area Pad Buttons. However, you can still use buttons outside of the main grid area (I.E. edge buttons).
+     * Just remember that entering this view clears them too, so you will need to set them again.
+     *
+     * One caveat is that you can not use batch update methods such as [batchSetRowLights] in this view as this is bugged, at least on the Launchpad MK2.
+     */
+    fun setupFaderView(faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false)
+
+    fun updateFader(faderIndex: Int, value: Byte)
+
+    fun setFaderUpdateListener(listener: (Int, Byte) -> Unit)
+
+    fun exitFaderView()
 
     /*
     TODO: Faders, device enquiry, version enquiry

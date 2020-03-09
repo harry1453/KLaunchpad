@@ -7,10 +7,12 @@ import com.harry1453.launchpad.api.Launchpad
 import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
 
 fun main() {
-    val color1 = Color(0, 50, 255)
-    val color2 = Color(255, 50, 50)
+    val color1 = Color(0, 0, 255)
+    val color2 = Color(255, 0, 0)
     val launchpad = Launchpad.connectToLaunchpadMK2()
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
+    launchpad.autoClockTempo = 60
+    launchpad.autoClockEnabled = true
     launchpad.setPadButtonListener { pad, pressed, _ ->
         if (pressed) {
             launchpad.flashPadLight(pad, color1, color2)
