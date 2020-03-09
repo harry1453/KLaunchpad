@@ -189,17 +189,37 @@ interface Launchpad : Closable {
      * Just remember that entering this view clears them too, so you will need to set them again.
      *
      * One caveat is that you can not use batch update methods such as [batchSetRowLights] in this view as this is bugged, at least on the Launchpad MK2.
+     *
+     * Once the fader view has been setup, the listener set using [setFaderUpdateListener], will be notified of any changes to the fader values, and you
+     * can update the fader values using [updateFader]. If the launchpad user updates the fader, the Launchpad handles the lighting change.
+     *
+     * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader colour and an initial value (0-127) as the value.
      */
     fun setupFaderView(faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false)
 
+    /**
+     * Update a fader's value as displayed on the launchpad whilst in fader view.
+     * @param faderIndex The index of the fader to update (0 to maxNumberOfFaders-1)
+     * @param value The new value of the fader (-63 to 64 if in bipolar mode, 0-127 if in unipolar mode)
+     */
     fun updateFader(faderIndex: Int, value: Byte)
 
-    fun setFaderUpdateListener(listener: (Int, Byte) -> Unit)
+    /**
+     * Sets a listener that is called when a fader is updated by the launchpad user.
+     *
+     * The launchpad may, in order to emulate a smooth fade, call this several times for one user action.
+     *
+     * [listener] may be invoked on any thread.
+     */
+    fun setFaderUpdateListener(listener: (faderIndex: Int, faderValue: Byte) -> Unit)
 
+    /**
+     * Exit the fader view and return to the normal view, with full programmability.
+     */
     fun exitFaderView()
 
     /*
-    TODO: Faders, device enquiry, version enquiry
+    TODO: device enquiry, version enquiry
      */
 
     companion object {

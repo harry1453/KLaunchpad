@@ -6,8 +6,9 @@ import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.Launchpad
 
 // Try changing this value to observe the different modes.
-const val bipolarMode = false
+const val bipolarMode = true
 
+@Suppress("ConstantConditionIf")
 fun main() {
     val color1 = Color(0, 0, 255)
     val color2 = Color(255, 100, 50)
@@ -28,7 +29,18 @@ fun main() {
     var fader6value: Byte = 111.toByte()
     var fader7value: Byte = 127.toByte()
 
-    var faderMode: Boolean = true
+    if (bipolarMode) {
+        fader0value = (fader0value - 63).toByte()
+        fader1value = (fader1value - 63).toByte()
+        fader2value = (fader2value - 63).toByte()
+        fader3value = (fader3value - 63).toByte()
+        fader4value = (fader4value - 63).toByte()
+        fader5value = (fader5value - 63).toByte()
+        fader6value = (fader6value - 63).toByte()
+        fader7value = (fader7value - 63).toByte()
+    }
+
+    var faderMode = true
 
     fun faderValueToString(faderValue: Byte): String {
         val value = faderValue.toString()
@@ -86,7 +98,8 @@ fun main() {
         }
         if (pressed) {
             if (pad.gridX == 8) {
-                val faderValue = (pad.gridY * 127 / 7).toByte()
+                var faderValue = (pad.gridY * 127 / 7).toByte()
+                if (bipolarMode) faderValue = (faderValue - 63).toByte()
                 (0..7).forEach {
                     launchpad.updateFader(it, faderValue)
                 }
