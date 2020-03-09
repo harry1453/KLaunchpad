@@ -1,29 +1,35 @@
 package com.harry1453.launchpad.api
 
-import com.harry1453.launchpad.api.MidiDevice
-import com.harry1453.launchpad.api.MidiDeviceInfo
-import kotlinx.cinterop.*
+import kotlinx.cinterop.CValue
+import kotlinx.cinterop.cValue
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.sizeOf
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import platform.windows.*
 
-actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    // TODO calling any of the midi functions breaks the linker...
-    val inputDeviceCount = midiInGetNumDevs().toInt()
-    val outputDeviceCount = midiOutGetNumDevs().toInt()
-    for (i in 0 until inputDeviceCount) {
-        memScoped {
-            val capabilities: CValue<MIDIINCAPS> = cValue()
-            val cap = midiInGetDevCapsW(i.toULong(), capabilities.getPointer(this), sizeOf<MIDIINCAPS>().toUInt())
-            println(cap)
+actual inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): Deferred<MidiDevice> {
+    return GlobalScope.async {
+        // TODO calling any of the midi functions breaks the linker...
+        val inputDeviceCount = midiInGetNumDevs().toInt()
+        val outputDeviceCount = midiOutGetNumDevs().toInt()
+        for (i in 0 until inputDeviceCount) {
+            memScoped {
+                val capabilities: CValue<MIDIINCAPS> = cValue()
+                val cap = midiInGetDevCapsW(i.toULong(), capabilities.getPointer(this), sizeOf<MIDIINCAPS>().toUInt())
+                println(cap)
+            }
         }
-    }
-    for (i in 0 until outputDeviceCount) {
-        memScoped {
-            val capabilities: CValue<MIDIOUTCAPS> = cValue()
-            val cap = midiOutGetDevCapsW(i.toULong(), capabilities.getPointer(this), sizeOf<MIDIOUTCAPS>().toUInt())
-            println(cap)
+        for (i in 0 until outputDeviceCount) {
+            memScoped {
+                val capabilities: CValue<MIDIOUTCAPS> = cValue()
+                val cap = midiOutGetDevCapsW(i.toULong(), capabilities.getPointer(this), sizeOf<MIDIOUTCAPS>().toUInt())
+                println(cap)
+            }
         }
+        return@async MidiDeviceImpl()
     }
-    return MidiDeviceImpl()
 }
 
 class MidiDeviceImpl : MidiDevice {

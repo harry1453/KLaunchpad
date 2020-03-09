@@ -1,6 +1,8 @@
 package com.harry1453.launchpad.api
 
-data class MidiDeviceInfo(val name: String, val description: String, val vendor: String, val version: String)
+import kotlinx.coroutines.Deferred
+
+data class MidiDeviceInfo(val name: String, val vendor: String, val version: String)
 
 interface MidiDevice : Closable {
     fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MessageType)
@@ -15,4 +17,9 @@ interface MidiDevice : Closable {
     }
 }
 
-expect inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice
+/**
+ * A function to open a MIDI device, which is the first available device for which [deviceFilter] returns true.
+ *
+ * [deviceFilter] may be called on any thread.
+ */
+expect inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): Deferred<MidiDevice>

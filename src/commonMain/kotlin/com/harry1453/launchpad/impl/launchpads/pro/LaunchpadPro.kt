@@ -3,7 +3,6 @@ package com.harry1453.launchpad.impl.launchpads.pro
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.MidiDevice
 import com.harry1453.launchpad.api.Pad
-import com.harry1453.launchpad.api.openMidiDevice
 import com.harry1453.launchpad.impl.AbstractLaunchpad
 import com.harry1453.launchpad.impl.toVelocity
 import com.harry1453.launchpad.impl.util.parseHexString
@@ -17,16 +16,11 @@ import kotlin.collections.component2
  *
  * Only supports programmer layout and fader layout; there is no support for note layout or drum layout.
  */
-internal class LaunchpadPro : AbstractLaunchpad() {
+internal class LaunchpadPro : AbstractLaunchpad("Launchpad Pro") {
     override val gridColumnCount = 10
     override val gridColumnStart = -1
     override val gridRowCount = 10
     override val gridRowStart = -1
-
-    override val midiDevice = openMidiDevice {
-            it.name.toLowerCase().contains("launchpad pro") // TODO untested
-        }
-        .apply { setMessageListener(this@LaunchpadPro::onMidiMessage) }
 
     init {
         // Initialize Launchpad
@@ -43,15 +37,15 @@ internal class LaunchpadPro : AbstractLaunchpad() {
     private var bipolarFaders: Boolean = false
     private var faderLayout: Boolean = false
 
-    private fun onMidiMessage(midiMessage: ByteArray) {
-        if (midiMessage.size == 3) {
-            val command = midiMessage[0].toUByte().toInt()
+    override fun onMidiMessage(message: ByteArray) {
+        if (message.size == 3) {
+            val command = message[0].toUByte().toInt()
             val controlChange = command in 0xB0..0xBF
-            val padCode = midiMessage[1].toUByte().toInt()
-            val value = midiMessage[2]
+            val padCode = message[1].toUByte().toInt()
+            val value = message[2]
             if (controlChange && padCode in 0x15..0x1C) {
                 // It's not a pad, it's a fader!
-                val faderValue = if (bipolarFaders) (midiMessage[2] - 63).toByte() else midiMessage[2]
+                val faderValue = if (bipolarFaders) (message[2] - 63).toByte() else message[2]
                 faderUpdateListener?.invoke(padCode - 0x15, faderValue)
             } else {
                 val map = when {
@@ -59,10 +53,10 @@ internal class LaunchpadPro : AbstractLaunchpad() {
                     else -> LaunchpadProPad.NON_EDGE_PADS
                 }
                 val pad = map[padCode] ?: return
-                val pressed = midiMessage[2] != 0.toByte()
+                val pressed = message[2] != 0.toByte()
                 padUpdateListener?.invoke(pad, pressed, value)
             }
-        } else if (midiMessage.contentEquals(sysExMessageScrollTextComplete)) {
+        } else if (message.contentEquals(sysExMessageScrollTextComplete)) {
             scrollTextFinishedListener?.invoke()
         }
     }

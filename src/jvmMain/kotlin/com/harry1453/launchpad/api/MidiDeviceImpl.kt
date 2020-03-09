@@ -1,32 +1,41 @@
 package com.harry1453.launchpad.api
 
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import javax.sound.midi.*
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 
-actual inline fun openMidiDevice(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it,
-        MidiDeviceInfo(it.name, it.description, it.vendor, it.version)
-    ) }
-        .filter { deviceFilter(it.second) }.getOrNull(0)?.first ?: error("Could not find device")
-    val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().map { Pair(it,
-        MidiDeviceInfo(it.name, it.description, it.vendor, it.version)
-    ) }
-        .filter { deviceFilter(it.second) }.getOrNull(1)?.first ?: error("Could not find device")
-    val firstDevice: JvmMidiDevice = MidiSystem.getMidiDevice(firstDeviceInfo)
-    val secondDevice: JvmMidiDevice = MidiSystem.getMidiDevice(secondDeviceInfo)
-    val outputDevice = when {
-        firstDevice.maxReceivers != 0 -> firstDevice
-        secondDevice.maxReceivers != 0 -> secondDevice
-        else -> error("Could not find an input device")
+actual inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): Deferred<MidiDevice> {
+    return GlobalScope.async { // TODO take advantage of parallelism
+        val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().map {
+            Pair(it, MidiDeviceInfo(it.name, it.vendor, it.version))
+        }
+            .firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
+        val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().map {
+            Pair(it, MidiDeviceInfo(it.name, it.vendor, it.version))
+        }
+            .filter { deviceFilter(it.second) }.getOrNull(1)?.first ?: error("Could not find device")
+        val firstDevice: JvmMidiDevice = MidiSystem.getMidiDevice(firstDeviceInfo)
+        val secondDevice: JvmMidiDevice = MidiSystem.getMidiDevice(secondDeviceInfo)
+        val outputDevice = when {
+            firstDevice.maxReceivers != 0 -> firstDevice
+            secondDevice.maxReceivers != 0 -> secondDevice
+            else -> error("Could not find an input device")
+        }
+        val inputDevice = when {
+            firstDevice.maxTransmitters != 0 -> firstDevice
+            secondDevice.maxTransmitters != 0 -> secondDevice
+            else -> error("Could not find an input device")
+        }
+        try {
+            firstDevice.open()
+            secondDevice.open()
+        } catch (e: MidiUnavailableException) {
+            throw IllegalStateException("Another app is using the Launchpad.")
+        }
+        return@async MidiDeviceImpl(inputDevice, outputDevice)
     }
-    val inputDevice = when {
-        firstDevice.maxTransmitters != 0 -> firstDevice
-        secondDevice.maxTransmitters != 0 -> secondDevice
-        else -> error("Could not find an input device")
-    }
-    firstDevice.open()
-    secondDevice.open()
-    return MidiDeviceImpl(inputDevice, outputDevice)
 }
 
 class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputDevice: JvmMidiDevice) : Receiver,

@@ -1,4 +1,4 @@
-@file:JvmName("UnipolarFaders")
+@file:JvmName("Faders")
 
 package com.harry1453.launchpad.examples
 
