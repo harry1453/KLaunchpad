@@ -1,6 +1,7 @@
 package com.harry1453.launchpad.api
 
 import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
+import com.harry1453.launchpad.impl.pro.LaunchpadPro
 
 // TODO Support more Launchpads!
 
@@ -187,6 +188,7 @@ interface Launchpad : Closable {
      * Entering Fader View this clears all pad LEDs, and will prevent you from setting main grid area Pad LEDs
      * and listening for main grid area Pad Buttons. However, you can still use buttons outside of the main grid area (I.E. edge buttons).
      * Just remember that entering this view clears them too, so you will need to set them again.
+     * LAUNCHPAD PRO ONLY: Also remember that, unless disabled in settings, the edge buttons self-illuminate when pressed in the fader view.
      *
      * One caveat is that you can not use batch update methods such as [batchSetRowLights] in this view as this is bugged, at least on the Launchpad MK2.
      *
@@ -231,6 +233,15 @@ interface Launchpad : Closable {
          */
         fun connectToLaunchpadMK2(userMode: Boolean = false): Launchpad {
             return LaunchpadMk2(userMode)
+        }
+
+        /**
+         * Connect to a Launchpad PRO. WARNING: THIS IS COMPLETELY UNTESTED AS I DO NOT OWN A LAUNCHPAD PRO
+         * @throws Exception if we could not connect to a Launchpad Pro
+         * TODO support for multiple devices connected
+         */
+        fun connectToLaunchpadPro(): Launchpad {
+            return LaunchpadPro()
         }
     }
 }

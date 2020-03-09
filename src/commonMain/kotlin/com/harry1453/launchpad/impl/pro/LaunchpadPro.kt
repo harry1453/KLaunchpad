@@ -1,4 +1,4 @@
-package com.harry1453.launchpad.impl.mk2
+package com.harry1453.launchpad.impl.pro
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.Launchpad
@@ -11,21 +11,25 @@ import com.harry1453.launchpad.impl.util.plus
 import kotlinx.coroutines.*
 
 /**
- * Supports using session layout or user layout on the Launchpad, configured by [userMode], as well as fader layout.
+ * NOTE: Launchpad Pro support is untested as I do not have a Launchpad Pro.
+ * This class was just written by reading the documentation.
+ *
+ * Only supports programmer layout and fader layout; there is no support for note layout or drum layout.
  */
-internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
-    override val gridColumnCount = 9
-    override val gridColumnStart = 0
-    override val gridRowCount = 9
-    override val gridRowStart = 0
+internal class LaunchpadPro : Launchpad {
+    override val gridColumnCount = 10
+    override val gridColumnStart = -1
+    override val gridRowCount = 10
+    override val gridRowStart = -1
 
     private val midiDevice = openMidiDevice {
-            it.name.toLowerCase().contains("launchpad mk2")
+            it.name.toLowerCase().contains("launchpad pro") // TODO untested
         }
-        .apply { setMessageListener(this@LaunchpadMk2::onMidiMessage) }
+        .apply { setMessageListener(this@LaunchpadPro::onMidiMessage) }
 
     init {
         // Initialize Launchpad
+        midiDevice.sendSysEx(sysExMessageSelectStandaloneMode)
         enterNormalMode()
         stopScrollingText()
         clearAllPadsLights()
@@ -56,6 +60,7 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
     private var faderUpdateListener: ((Int, Byte) -> Unit)? = null
 
     private var bipolarFaders: Boolean = false
+    private var faderLayout: Boolean = false
 
     override val isClosed: Boolean
         get() = !(autoClockJob?.isActive ?: false) && midiDevice.isClosed
@@ -72,9 +77,8 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
                 faderUpdateListener?.invoke(padCode - 0x15, faderValue)
             } else {
                 val map = when {
-                    controlChange -> LaunchpadMk2Pad.CONTROL_CHANGE_PADS
-                    userMode -> LaunchpadMk2Pad.USER_MODE_PADS
-                    else -> LaunchpadMk2Pad.SESSION_MODE_PADS
+                    controlChange -> LaunchpadProPad.EDGE_PADS
+                    else -> LaunchpadProPad.NON_EDGE_PADS
                 }
                 val pad = map[padCode] ?: return
                 val pressed = midiMessage[2] != 0.toByte()
@@ -85,19 +89,15 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
         }
     }
 
-    private val Pad.sessionMidiCode: Int
-        get() {
-            require(this is LaunchpadMk2Pad)
-            return this.sessionMidiCode
-        }
-
     override fun setPadButtonListener(listener: (pad: Pad, pressed: Boolean, velocity: Byte) -> Unit) {
         this.padUpdateListener = listener
     }
 
     private fun setPadLightColor(pad: Pad, color: Color, channel: Int) {
-        require(pad is LaunchpadMk2Pad)
-        midiDevice.sendMessage(channel, if (userMode) pad.userMidiCode else pad.sessionMidiCode, color.toVelocity(), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+        require(pad is LaunchpadProPad)
+        // Don't update non-edge pads in fader mode
+        if (faderLayout && !pad.isEdgePad) return
+        midiDevice.sendMessage(channel, pad.midiCode, color.toVelocity(), if (pad.isEdgePad) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
     }
 
     override fun setPadLight(pad: Pad, color: Color) {
@@ -113,8 +113,19 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
         setPadLightColor(pad, color, 2)
     }
 
+    private fun Pad.getMidiCode(faderLayout: Boolean): Int? {
+        require(this is LaunchpadProPad)
+        return this.getMidiCode(faderLayout)
+    }
+
     override fun batchSetPadLights(padsAndColors: Iterable<Pair<Pad, Color>>) {
-        midiDevice.sendSysEx(padsAndColors.map { sysExMessageSetPad + it.first.sessionMidiCode + it.second.toVelocity() + 0xF7 }
+        midiDevice.sendSysEx(padsAndColors.mapNotNull {
+                val pad = it.first
+                require(pad is LaunchpadProPad)
+                // Don't update non-edge pads in fader mode
+                if (faderLayout && !pad.isEdgePad) return@mapNotNull null
+                sysExMessageSetPad + (pad.midiCode) + it.second.toVelocity() + 0xF7
+            }
             .reduce { acc, bytes -> acc + bytes })
     }
 
@@ -154,11 +165,13 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
     }
 
     private fun enterNormalMode() {
-        midiDevice.sendSysEx(if (userMode) sysExMessageChangeLayoutToUser else sysExMessageChangeLayoutToSession)
+        midiDevice.sendSysEx(sysExMessageChangeLayoutToProgrammer)
+        faderLayout = false
     }
 
-    private fun enterFaderMode(bipolar: Boolean) {
-        midiDevice.sendSysEx(if (bipolar) sysExMessageChangeLayoutToBipolarFader else sysExMessageChangeLayoutToUnipolarFader)
+    private fun enterFaderMode() {
+        midiDevice.sendSysEx(sysExMessageChangeLayoutToFader)
+        faderLayout = true
     }
 
     override fun setTextScrollFinishedListener(listener: () -> Unit) {
@@ -184,21 +197,22 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
     }
 
     override fun getPad(x: Int, y: Int): Pad? {
-        return LaunchpadMk2Pad.findPad(x, y)
+        return LaunchpadProPad.findPad(x, y)
     }
 
     override val maxNumberOfFaders = 8
 
     override fun setupFaderView(faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean) {
+        // TODO support for mixing fader types
         // TODO check sizes and indexes
         bipolarFaders = bipolar
-        enterFaderMode(bipolar)
-        midiDevice.sendSysEx(faders.map { (faderIndex, pair) ->
+        enterFaderMode()
+        midiDevice.sendSysEx(sysExMessageSetupFader + faders.map { (faderIndex, pair) ->
             val color = pair.first
             val initialValue = if (bipolar) pair.second + 63 else pair.second.toInt()
             require(initialValue >= 0) { "Fader value must be 0-127" }
-            sysExMessageSetupFader + faderIndex + (if (bipolar) 0x01 else 0x00) + color.toVelocity() + initialValue + 0xF7
-        }.reduce { acc, bytes -> acc + bytes })
+            faderIndex + (if (bipolar) 0x01 else 0x00) + color.toVelocity() + initialValue
+        }.reduce { acc, bytes -> acc + bytes } + 0xF7)
     }
 
     override fun updateFader(faderIndex: Int, value: Byte) {
@@ -224,23 +238,29 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
     companion object {
         private val speedCommandRegex = Regex("\\{s([1-7])}")
 
-        private val sysExHeader = "F00020290218".parseHexString()
+        private val sysExHeader = "F00020290210".parseHexString()
 
         private val sysExMessageSetPad = sysExHeader + 0x0A
         private val sysExMessageSetPadRgb = sysExHeader + 0x0B // TODO this doesn't work...
         private val sysExMessageSetColumn = sysExHeader + 0x0C
         private val sysExMessageSetRow = sysExHeader + 0x0D
         private val sysExMessageSetAllPads = sysExHeader + 0x0E
+        private val sysExMessageSetPadsInGrid = sysExHeader + 0x0F // TODO unimplemented
         private val sysExMessageFlashPad = sysExHeader + 0x23 // TODO this doesn't work...
         private val sysExMessagePulsePad = sysExHeader + 0x28 // TODO this doesn't work...
 
         private val sysExMessageSetupFader = sysExHeader + 0x2B
 
-        private val sysExMessageChangeLayout = sysExHeader + 0x22
-        private val sysExMessageChangeLayoutToSession = sysExMessageChangeLayout + 0x00 + 0xF7
-        private val sysExMessageChangeLayoutToUser = sysExMessageChangeLayout + 0x01 + 0xF7
-        private val sysExMessageChangeLayoutToUnipolarFader = sysExMessageChangeLayout + 0x04 + 0xF7
-        private val sysExMessageChangeLayoutToBipolarFader = sysExMessageChangeLayout + 0x05 + 0xF7
+        private val sysExMessageSelectMode = sysExHeader + 0x21
+        private val sysExMessageSelectAbletonMode = sysExMessageSelectMode + 0x00 + 0xF7 // TODO unimplemented
+        private val sysExMessageSelectStandaloneMode = sysExMessageSelectMode + 0x01 + 0xF7
+
+        // All in standalone mode
+        private val sysExMessageChangeLayout = sysExHeader + 0x2C
+        private val sysExMessageChangeLayoutToNote = sysExMessageChangeLayout + 0x00 + 0xF7 // TODO unimplemented
+        private val sysExMessageChangeLayoutToDrum = sysExMessageChangeLayout + 0x01 + 0xF7 // TODO unimplemented
+        private val sysExMessageChangeLayoutToFader = sysExMessageChangeLayout + 0x02 + 0xF7
+        private val sysExMessageChangeLayoutToProgrammer = sysExMessageChangeLayout + 0x03 + 0xF7
 
         private val sysExMessageScrollText = sysExHeader + 0x14
         private val sysExMessageStopScrollingText = sysExMessageScrollText + 0x00 + 0xF7
