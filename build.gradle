@@ -18,6 +18,9 @@ kotlin {
             jvmTarget = "1.8"
         }
     }
+    js {
+
+    }
     mingwX64("windows") {
         binaries {
             executable("kotlin-launchpad")
@@ -58,6 +61,13 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation kotlin('test-junit')
+            }
+        }
+
+        jsMain {
+            dependsOn commonMain
+            dependencies {
+                implementation kotlin('stdlib-js')
             }
         }
 
