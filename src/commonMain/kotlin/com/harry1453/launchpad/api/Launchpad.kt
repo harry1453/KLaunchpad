@@ -1,7 +1,7 @@
 package com.harry1453.launchpad.api
 
-import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
-import com.harry1453.launchpad.impl.pro.LaunchpadPro
+import com.harry1453.launchpad.impl.launchpads.mk2.LaunchpadMk2
+import com.harry1453.launchpad.impl.launchpads.pro.LaunchpadPro
 
 // TODO Support more Launchpads!
 

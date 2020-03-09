@@ -1,4 +1,4 @@
-package com.harry1453.launchpad.impl.pro
+package com.harry1453.launchpad.impl.launchpads.pro
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.MidiDevice
@@ -8,14 +8,8 @@ import com.harry1453.launchpad.impl.AbstractLaunchpad
 import com.harry1453.launchpad.impl.toVelocity
 import com.harry1453.launchpad.impl.util.parseHexString
 import com.harry1453.launchpad.impl.util.plus
-import kotlin.collections.Iterable
-import kotlin.collections.Map
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.contentEquals
-import kotlin.collections.map
-import kotlin.collections.mapNotNull
-import kotlin.collections.reduce
 
 /**
  * NOTE: Launchpad Pro support is untested as I do not have a Launchpad Pro.

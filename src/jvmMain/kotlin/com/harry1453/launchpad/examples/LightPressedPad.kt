@@ -4,7 +4,6 @@ package com.harry1453.launchpad.examples
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.Launchpad
-import com.harry1453.launchpad.impl.mk2.LaunchpadMk2
 
 fun main() {
     val color = Color(0, 50, 255)

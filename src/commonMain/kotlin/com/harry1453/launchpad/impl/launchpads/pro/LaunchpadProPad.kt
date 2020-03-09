@@ -1,4 +1,4 @@
-package com.harry1453.launchpad.impl.pro
+package com.harry1453.launchpad.impl.launchpads.pro
 
 import com.harry1453.launchpad.api.Pad
 

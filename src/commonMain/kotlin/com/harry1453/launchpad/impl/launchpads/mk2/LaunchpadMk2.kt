@@ -1,4 +1,4 @@
-package com.harry1453.launchpad.impl.mk2
+package com.harry1453.launchpad.impl.launchpads.mk2
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.MidiDevice
