@@ -1,25 +1,26 @@
 package com.harry1453.launchpad.impl.mk2
 
 import com.harry1453.launchpad.api.Color
-import com.harry1453.launchpad.api.Launchpad
-import com.harry1453.launchpad.api.Pad
-import com.harry1453.launchpad.impl.toVelocity
 import com.harry1453.launchpad.api.MidiDevice
+import com.harry1453.launchpad.api.Pad
 import com.harry1453.launchpad.api.openMidiDevice
+import com.harry1453.launchpad.impl.AbstractLaunchpad
+import com.harry1453.launchpad.impl.toVelocity
 import com.harry1453.launchpad.impl.util.parseHexString
 import com.harry1453.launchpad.impl.util.plus
-import kotlinx.coroutines.*
+import kotlin.collections.component1
+import kotlin.collections.component2
 
 /**
  * Supports using session layout or user layout on the Launchpad, configured by [userMode], as well as fader layout.
  */
-internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
+internal class LaunchpadMk2(private val userMode: Boolean = false) : AbstractLaunchpad() {
     override val gridColumnCount = 9
     override val gridColumnStart = 0
     override val gridRowCount = 9
     override val gridRowStart = 0
 
-    private val midiDevice = openMidiDevice {
+    override val midiDevice = openMidiDevice {
             it.name.toLowerCase().contains("launchpad mk2")
         }
         .apply { setMessageListener(this@LaunchpadMk2::onMidiMessage) }
@@ -31,34 +32,11 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
         clearAllPadsLights()
     }
 
-    private var autoClockJob: Job? = null
-    override var autoClockEnabled: Boolean = false
-        set(newSetting) {
-            if (newSetting) {
-                startAutoClock()
-            } else {
-                autoClockJob?.cancel()
-            }
-            field = newSetting
-        }
-
-    private fun startAutoClock() {
-        autoClockJob = GlobalScope.launch {
-            while(isActive) {
-                delay(60000.toLong() / 24 / autoClockTempo)
-                midiDevice.clock()
-            }
-        }
-    }
-
     private var padUpdateListener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)? = null
     private var scrollTextFinishedListener: (() -> Unit)? = null
     private var faderUpdateListener: ((Int, Byte) -> Unit)? = null
 
     private var bipolarFaders: Boolean = false
-
-    override val isClosed: Boolean
-        get() = !(autoClockJob?.isActive ?: false) && midiDevice.isClosed
 
     private fun onMidiMessage(midiMessage: ByteArray) {
         if (midiMessage.size == 3) {
@@ -165,19 +143,7 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
         this.scrollTextFinishedListener = listener
     }
 
-    override var autoClockTempo: Int = 120 // Launchpad default
-        set(newBpm) {
-            require(newBpm in 40..240) { "Launchpad MK2 only supports BPM between 40 and 240"}
-            field = newBpm
-        }
-
     override val autoClockTempoRange = 40..240
-
-    override fun clock() {
-        if (!autoClockEnabled) {
-            midiDevice.clock()
-        }
-    }
 
     override fun enterBootloader() {
         midiDevice.sendSysEx(sysExMessageEnterBootloader)
@@ -214,11 +180,6 @@ internal class LaunchpadMk2(private val userMode: Boolean = false) : Launchpad {
 
     override fun exitFaderView() {
         enterNormalMode()
-    }
-
-    override fun close() {
-        autoClockJob?.cancel()
-        midiDevice.close()
     }
 
     companion object {
