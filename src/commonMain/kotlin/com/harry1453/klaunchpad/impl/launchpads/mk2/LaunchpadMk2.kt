@@ -65,7 +65,7 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
             return this.sessionMidiCode
         }
 
-    override fun setPadButtonListener(listener: (pad: Pad, pressed: Boolean, velocity: Byte) -> Unit) {
+    override fun setPadButtonListener(listener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)?) {
         this.padUpdateListener = listener
     }
 
@@ -135,7 +135,7 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
         midiDevice.sendSysEx(if (bipolar) sysExMessageChangeLayoutToBipolarFader else sysExMessageChangeLayoutToUnipolarFader)
     }
 
-    override fun setTextScrollFinishedListener(listener: () -> Unit) {
+    override fun setTextScrollFinishedListener(listener: (() -> Unit)?) {
         this.scrollTextFinishedListener = listener
     }
 
@@ -170,7 +170,7 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
         midiDevice.sendMessage(0, faderIndex + 0x15, faderValue, MidiDevice.MessageType.ControlChange)
     }
 
-    override fun setFaderUpdateListener(listener: (Int, Byte) -> Unit) {
+    override fun setFaderUpdateListener(listener: ((Int, Byte) -> Unit)?) {
         this.faderUpdateListener = listener
     }
 

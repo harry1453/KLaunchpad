@@ -13,8 +13,12 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
     override val gridRowStart: Int
         get() = delegate.gridRowStart
 
-    override fun setPadButtonListener(listener: (pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit) {
-        delegate.setPadButtonListener { pad, pressed, velocity -> listener(pad.toJsPad(), pressed, velocity) }
+    override fun setPadButtonListener(listener: ((pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)?) {
+        if (listener == null) {
+            delegate.setPadButtonListener(null)
+        } else {
+            delegate.setPadButtonListener { pad, pressed, velocity -> listener(pad.toJsPad(), pressed, velocity) }
+        }
     }
 
     override fun setPadLight(pad: JsPad, color: JsColor) {
@@ -69,7 +73,7 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
         delegate.stopScrollingText()
     }
 
-    override fun setTextScrollFinishedListener(listener: () -> Unit) {
+    override fun setTextScrollFinishedListener(listener: (() -> Unit)?) {
         delegate.setTextScrollFinishedListener(listener)
     }
 
@@ -108,7 +112,7 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
         delegate.updateFader(faderIndex, value)
     }
 
-    override fun setFaderUpdateListener(listener: (faderIndex: Int, faderValue: Byte) -> Unit) {
+    override fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?) {
         delegate.setFaderUpdateListener(listener)
     }
 

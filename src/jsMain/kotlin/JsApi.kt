@@ -49,11 +49,9 @@ interface JsLaunchpad {
      * Set a listener that will be called whenever a Pad's button state is updated.
      *
      * [listener] takes the Pad that was udpated, whether it is currently pressed, and the velocity it was pressed with, if it was pressed. The velocity is on a scale of 0-127.
-     *
-     * [listener] may be invoked on any thread.
      */
     @JsName("setPadButtonListener")
-    fun setPadButtonListener(listener: (pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)
+    fun setPadButtonListener(listener: ((pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)?)
 
     /**
      * Set [pad]'s LED to solid [color]. Passing [BLACK] turns off the pad.
@@ -80,7 +78,7 @@ interface JsLaunchpad {
     fun flashPadLight(pad: JsPad, color: JsColor)
 
     /**
-     * Pulse [pad]'s LED between 25% and 100% brightness. TODO how often does this loop?
+     * Pulse [pad]'s LED between 25% and 100% brightness, with a period of 2 beats.
      */
     @JsName("pulsePadLight")
     fun pulsePadLight(pad: JsPad, color: JsColor)
@@ -115,7 +113,7 @@ interface JsLaunchpad {
     /**
      * Turn off all Pad LEDs.
      */
-    @JsName("clearAllPadsLights")
+    @JsName("clearAllPadLights")
     fun clearAllPadLights()
 
     /**
@@ -147,14 +145,14 @@ interface JsLaunchpad {
      * [listener] may be invoked on any thread.
      */
     @JsName("setTextScrollFinishedListener")
-    fun setTextScrollFinishedListener(listener: () -> Unit)
+    fun setTextScrollFinishedListener(listener: (() -> Unit)?)
 
     /**
      * Get / Set Whether Auto Clocking is enabled.
      *
      * If Auto Clocking is enabled, the launchpad will be clocked automatically 24 times per beat.
      * This is the equivalent of starting a thread that calls [clock] 24 times per beat.
-     * This sets the BPM of the launchpad, which is used for flashing effects and pulsing effects. TODO is it used for pulsing?
+     * This sets the BPM of the launchpad, which is used for flashing effects and pulsing effects.
      *
      * The tempo of Auto Clocking is determined by [autoClockTempo]
      *
@@ -233,11 +231,9 @@ interface JsLaunchpad {
      * Sets a listener that is called when a fader is updated by the launchpad user.
      *
      * The launchpad may, in order to emulate a smooth fade, call this several times for one user action.
-     *
-     * [listener] may be invoked on any thread.
      */
     @JsName("setFaderUpdateListener")
-    fun setFaderUpdateListener(listener: (faderIndex: Int, faderValue: Byte) -> Unit)
+    fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?)
 
     /**
      * Exit the fader view and return to the normal view, with full programmability.

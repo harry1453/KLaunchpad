@@ -55,7 +55,7 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setPadButtonListener(listener: (pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)
+    fun setPadButtonListener(listener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)?)
 
     /**
      * Set [pad]'s LED to solid [color]. Passing [Color.BLACK] turns off the pad.
@@ -136,7 +136,7 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setTextScrollFinishedListener(listener: () -> Unit)
+    fun setTextScrollFinishedListener(listener: (() -> Unit)?)
 
     /**
      * Get / Set Whether Auto Clocking is enabled.
@@ -216,7 +216,7 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setFaderUpdateListener(listener: (faderIndex: Int, faderValue: Byte) -> Unit)
+    fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?)
 
     /**
      * Exit the fader view and return to the normal view, with full programmability.

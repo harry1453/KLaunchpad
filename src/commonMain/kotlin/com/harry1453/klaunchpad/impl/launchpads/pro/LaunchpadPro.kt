@@ -61,7 +61,7 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         }
     }
 
-    override fun setPadButtonListener(listener: (pad: Pad, pressed: Boolean, velocity: Byte) -> Unit) {
+    override fun setPadButtonListener(listener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)?) {
         this.padUpdateListener = listener
     }
 
@@ -140,7 +140,7 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         faderLayout = true
     }
 
-    override fun setTextScrollFinishedListener(listener: () -> Unit) {
+    override fun setTextScrollFinishedListener(listener: (() -> Unit)?) {
         this.scrollTextFinishedListener = listener
     }
 
@@ -176,7 +176,7 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         midiDevice.sendMessage(0, faderIndex + 0x15, faderValue, MidiDevice.MessageType.ControlChange)
     }
 
-    override fun setFaderUpdateListener(listener: (Int, Byte) -> Unit) {
+    override fun setFaderUpdateListener(listener: ((Int, Byte) -> Unit)?) {
         this.faderUpdateListener = listener
     }
 

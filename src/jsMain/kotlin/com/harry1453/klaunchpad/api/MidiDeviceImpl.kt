@@ -60,7 +60,6 @@ class MidiDeviceImpl(private val midiInput: MIDIInput, private val midiOutput: M
         get() = midiInput.state == "connected" && midiOutput.state == "connected"
 
     override fun close() {
-        midiOutput.clear()
         midiInput.close()
         midiOutput.close()
     }
