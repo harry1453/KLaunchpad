@@ -8,5 +8,5 @@ import com.harry1453.klaunchpad.api.connectToLaunchpadMK2
 
 fun main() {
     val launchpad = Launchpad.connectToLaunchpadMK2()
-    launchpad.scrollText("Hello World!", Color(255, 255, 255), loop = true)
+    launchpad.scrollText("{s7}Hello {s3}World!", Color(0, 255, 0), loop = true)
 }

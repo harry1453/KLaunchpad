@@ -252,7 +252,7 @@ interface Launchpad : Closable {
          */
         fun connectToLaunchpadProAsync(): Deferred<Launchpad> {
             return GlobalScope.async {
-                val midiDevice = openMidiDeviceAsync { it.name.toLowerCase().contains("Launchpad MK2".toLowerCase()) }
+                val midiDevice = openMidiDeviceAsync { it.name.toLowerCase().contains("Launchpad Pro".toLowerCase()) }
                 LaunchpadPro(midiDevice)
             }
         }
