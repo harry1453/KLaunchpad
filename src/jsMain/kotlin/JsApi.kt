@@ -89,6 +89,7 @@ interface JsLaunchpad {
      * @param padsAndColors A list of Pads and the color that their LED should be set to.
      */
     @JsName("batchSetPadLights")
+    // TODO replace iterables with a JS-callable API
     fun batchSetPadLights(padsAndColors: Iterable<Pair<JsPad, JsColor>>)
 
     /**

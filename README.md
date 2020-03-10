@@ -1,4 +1,4 @@
-# Kotlin Launchpads (KLaunchpads)
+# KLaunchpad (Novation Launchpad for Kotlin and many other languages)
 
 Kotlin Launchpads is a high-level library for manipulating and interacting with [Novation Launchpads](https://novationmusic.com/en/launch).
 

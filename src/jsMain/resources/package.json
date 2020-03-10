@@ -1,0 +1,17 @@
+{
+    "main": "kotlin/KLaunchpad.js",
+    "devDependencies": {
+        "webpack": "4.41.2",
+        "webpack-cli": "3.3.10",
+        "webpack-dev-server": "3.9.0"
+    },
+    "dependencies": {
+        "kotlin": "1.3.70",
+        "kotlinx-coroutines-core": "1.3.4"
+    },
+    "peerDependencies": {},
+    "optionalDependencies": {},
+    "bundledDependencies": [],
+    "name": "klaunchpad",
+    "version": "0.0.3"
+}
