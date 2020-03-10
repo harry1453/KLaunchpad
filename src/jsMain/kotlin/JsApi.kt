@@ -274,8 +274,13 @@ interface JsColor {
     val b: Int
 }
 
-@JsName("FaderSettings")
-class FaderSettings {
-    var color: JsColor = BLACK
-    var initialValue: Int = 0
+@JsName("faderSettings")
+fun faderSettings(color: JsColor, initialValue: Int): FaderSettings {
+    return FaderSettings(color, initialValue)
 }
+
+@JsName("FaderSettingsStruct")
+data class FaderSettings(
+    var color: JsColor,
+    var initialValue: Int
+)
