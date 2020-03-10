@@ -25,7 +25,7 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
         // Initialize Launchpad
         enterNormalMode()
         stopScrollingText()
-        clearAllPadsLights()
+        clearAllPadLights()
     }
 
     private var padUpdateListener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)? = null

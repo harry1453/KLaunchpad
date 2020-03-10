@@ -27,7 +27,7 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         midiDevice.sendSysEx(sysExMessageSelectStandaloneMode)
         enterNormalMode()
         stopScrollingText()
-        clearAllPadsLights()
+        clearAllPadLights()
     }
 
     private var padUpdateListener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)? = null

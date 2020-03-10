@@ -21,8 +21,16 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
         delegate.setPadLight(pad.toPad(), color.toColor())
     }
 
+    override fun clearPadLight(pad: JsPad) {
+        delegate.clearPadLight(pad.toPad())
+    }
+
     override fun flashPadLight(pad: JsPad, color1: JsColor, color2: JsColor) {
         delegate.flashPadLight(pad.toPad(), color1.toColor(), color2.toColor())
+    }
+
+    override fun flashPadLight(pad: JsPad, color: JsColor) {
+        delegate.flashPadLight(pad.toPad(), color.toColor())
     }
 
     override fun pulsePadLight(pad: JsPad, color: JsColor) {
@@ -47,6 +55,10 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
 
     override fun setAllPadLights(color: JsColor) {
         delegate.setAllPadLights(color.toColor())
+    }
+
+    override fun clearAllPadLights() {
+        delegate.clearAllPadLights()
     }
 
     override fun scrollText(message: String, color: JsColor, loop: Boolean) {

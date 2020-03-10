@@ -73,12 +73,12 @@ interface Launchpad : Closable {
     fun flashPadLight(pad: Pad, color1: Color, color2: Color)
 
     /**
-     * Flash [pad]'s LED between off and [color], toggling between the two states every half beat.
+     * Flash [pad]'s LED between off and [color], toggling between the two states every half beat (Period of 1 beat).
      */
     fun flashPadLight(pad: Pad, color: Color) = flashPadLight(pad, Color.BLACK, color)
 
     /**
-     * Pulse [pad]'s LED between 25% and 100% brightness. TODO how often does this loop?
+     * Pulse [pad]'s LED between 25% and 100% brightness, with a period of 2 beats.
      */
     fun pulsePadLight(pad: Pad, color: Color)
 
@@ -108,7 +108,7 @@ interface Launchpad : Closable {
     /**
      * Turn off all Pad LEDs.
      */
-    fun clearAllPadsLights() = setAllPadLights(Color.BLACK)
+    fun clearAllPadLights() = setAllPadLights(Color.BLACK)
 
     /**
      * Scroll text across the grid.
@@ -143,7 +143,7 @@ interface Launchpad : Closable {
      *
      * If Auto Clocking is enabled, the launchpad will be clocked automatically 24 times per beat.
      * This is the equivalent of starting a thread that calls [clock] 24 times per beat.
-     * This sets the BPM of the launchpad, which is used for flashing effects and pulsing effects. TODO is it used for pulsing?
+     * This sets the BPM of the launchpad, which is used for flashing effects and pulsing effects.
      *
      * The tempo of Auto Clocking is determined by [autoClockTempo]
      *

@@ -65,7 +65,7 @@ interface JsLaunchpad {
      * Turn off [pad]'s LED.
      */
     @JsName("clearPadLight")
-    fun clearPadLight(pad: JsPad) = setPadLight(pad, BLACK)
+    fun clearPadLight(pad: JsPad)
 
     /**
      * Flash [pad]'s LED between [color1] and [color2], toggling between the two colors every half beat.
@@ -77,7 +77,7 @@ interface JsLaunchpad {
      * Flash [pad]'s LED between off and [color], toggling between the two states every half beat.
      */
     @JsName("flashPadLightOnAndOff")
-    fun flashPadLight(pad: JsPad, color: JsColor) = flashPadLight(pad, BLACK, color)
+    fun flashPadLight(pad: JsPad, color: JsColor)
 
     /**
      * Pulse [pad]'s LED between 25% and 100% brightness. TODO how often does this loop?
@@ -116,7 +116,7 @@ interface JsLaunchpad {
      * Turn off all Pad LEDs.
      */
     @JsName("clearAllPadsLights")
-    fun clearAllPadsLights() = setAllPadLights(BLACK)
+    fun clearAllPadLights()
 
     /**
      * Scroll text across the grid.
