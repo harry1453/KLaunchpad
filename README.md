@@ -24,7 +24,13 @@ TODO
 
 ## Examples
 
+### JVM (Java, Kotlin, Groovy, Scala etc)
+
 Please take a look at the [Examples](src/jvmMain/kotlin/com/harry1453/launchpad/examples). These should work with any supported launchpad.
+
+### JS (JavaScript, TypeScript)
+
+Please take a look at the example [React App](examples/js/react-examples) that contains some examples of using the Launchpad in a browser.
 
 ## Launchpad Support
 
