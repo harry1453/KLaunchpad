@@ -1,6 +1,6 @@
-import com.harry1453.launchpad.api.Color
-import com.harry1453.launchpad.api.Launchpad
-import com.harry1453.launchpad.api.Pad
+import com.harry1453.klaunchpad.api.Color
+import com.harry1453.klaunchpad.api.Launchpad
+import com.harry1453.klaunchpad.api.Pad
 
 internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpad {
     override val gridColumnCount: Int

@@ -1,5 +1,5 @@
-import com.harry1453.launchpad.api.Color
-import com.harry1453.launchpad.impl.toVelocity
+import com.harry1453.klaunchpad.api.Color
+import com.harry1453.klaunchpad.impl.toVelocity
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

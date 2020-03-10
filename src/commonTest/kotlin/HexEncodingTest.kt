@@ -1,5 +1,5 @@
-import com.harry1453.launchpad.impl.util.parseHexString
-import com.harry1453.launchpad.impl.util.toHexString
+import com.harry1453.klaunchpad.impl.util.parseHexString
+import com.harry1453.klaunchpad.impl.util.toHexString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,5 +1,5 @@
-import com.harry1453.launchpad.impl.launchpads.mk2.LaunchpadMk2Pad
-import com.harry1453.launchpad.impl.launchpads.pro.LaunchpadProPad
+import com.harry1453.klaunchpad.impl.launchpads.mk2.LaunchpadMk2Pad
+import com.harry1453.klaunchpad.impl.launchpads.pro.LaunchpadProPad
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

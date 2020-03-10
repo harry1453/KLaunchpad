@@ -2,8 +2,8 @@ plugins {
     id 'org.jetbrains.kotlin.multiplatform' version '1.3.70'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'com.harry1453.klaunchpad'
+version '0.0.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -22,7 +22,7 @@ kotlin {
         browser {
             dceTask {
                 // Keep APIs
-                keep 'KLaunchpad.Launchpad', 'KLaunchpad.Pad', 'KLaunchpad.Color'
+                keep 'KLaunchpad.JSLaunchpad', 'KLaunchpad.Pad', 'KLaunchpad.Color'
             }
             webpackTask {
                 output.libraryTarget = "commonjs"
@@ -31,7 +31,7 @@ kotlin {
     }
     mingwX64("windows") {
         binaries {
-            executable("kotlin-launchpad")
+            executable("KLaunchpad")
         }
     }
 
