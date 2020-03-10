@@ -1,4 +1,5 @@
 import com.harry1453.klaunchpad.api.Launchpad
+import jsExternal.JsMap
 import kotlinx.coroutines.asPromise
 import kotlin.js.Promise
 
@@ -55,7 +56,7 @@ interface JsLaunchpad {
     fun setPadButtonListener(listener: (pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)
 
     /**
-     * Set [pad]'s LED to solid [color]. Passing [Color.BLACK] turns off the pad.
+     * Set [pad]'s LED to solid [color]. Passing [BLACK] turns off the pad.
      */
     @JsName("setPadLight")
     fun setPadLight(pad: JsPad, color: JsColor)
@@ -89,22 +90,21 @@ interface JsLaunchpad {
      * @param padsAndColors A list of Pads and the color that their LED should be set to.
      */
     @JsName("batchSetPadLights")
-    // TODO replace iterables with a JS-callable API
-    fun batchSetPadLights(padsAndColors: Iterable<Pair<JsPad, JsColor>>)
+    fun batchSetPadLights(padsAndColors: JsMap<JsPad, JsColor>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color
      * @param rowsAndColors A list of row indexes and the color that row should be set to.
      */
     @JsName("batchSetRowLights")
-    fun batchSetRowLights(rowsAndColors: Iterable<Pair<Int, JsColor>>)
+    fun batchSetRowLights(rowsAndColors: JsMap<Int, JsColor>)
 
     /**
      * Bulk update columns of Pad LEDs to be all one color
      * @param columnsAndColors A list of column indexes and the color that column should be set to.
      */
     @JsName("batchSetColumnLights")
-    fun batchSetColumnLights(columnsAndColors: Iterable<Pair<Int, JsColor>>)
+    fun batchSetColumnLights(columnsAndColors: JsMap<Int, JsColor>)
 
     /**
      * Set all Pad LEDs to [color].
@@ -219,7 +219,7 @@ interface JsLaunchpad {
      * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader colour and an initial value (0-127) as the value.
      */
     @JsName("setupFaderView")
-    fun setupFaderView(faders: Map<Int, Pair<JsColor, Byte>>, bipolar: Boolean = false)
+    fun setupFaderView(faders: JsMap<Int, FaderSettings>, bipolar: Boolean = false)
 
     /**
      * Update a fader's value as displayed on the launchpad whilst in fader view.
@@ -276,4 +276,10 @@ interface JsColor {
     val g: Int
     @JsName("b")
     val b: Int
+}
+
+@JsName("FaderSettings")
+class FaderSettings {
+    var color: JsColor = BLACK
+    var initialValue: Int = 0
 }

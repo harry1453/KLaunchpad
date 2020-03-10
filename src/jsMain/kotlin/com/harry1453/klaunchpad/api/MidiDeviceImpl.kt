@@ -1,21 +1,24 @@
 package com.harry1453.klaunchpad.api
 
-import com.harry1453.klaunchpad.api.webmidi.*
+import jsExternal.MIDIInput
+import jsExternal.MIDIOutput
+import jsExternal.midiOptions
+import jsExternal.requestMIDIAccess
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
+import toMap
 import kotlin.browser.window
-import kotlin.js.json
 
 actual suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    val midiAccess = window.navigator.requestMIDIAccess(json(Pair("sysex", true)).unsafeCast<MIDIOptions>()).await()
+    val midiAccess = window.navigator.requestMIDIAccess(midiOptions(sysex = true)).await()
 
-    val midiInput = midiAccess.inputs.values().toIterable().map {
-        it to MidiDeviceInfo(it.name.orEmpty(), it.manufacturer.orEmpty(), it.version.orEmpty())
+    val midiInput = midiAccess.inputs.toMap().map { (deviceId, device) ->
+        device to MidiDeviceInfo(device.name.orEmpty(), device.manufacturer.orEmpty(), device.version.orEmpty())
     }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
 
-    val midiOutput = midiAccess.outputs.values().toIterable().map {
-        it to MidiDeviceInfo(it.name.orEmpty(), it.manufacturer.orEmpty(), it.version.orEmpty())
+    val midiOutput = midiAccess.outputs.toMap().map { (deviceId, device) ->
+        device to MidiDeviceInfo(device.name.orEmpty(), device.manufacturer.orEmpty(), device.version.orEmpty())
     }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
 
     return MidiDeviceImpl(midiInput.open().await(), midiOutput.open().await())

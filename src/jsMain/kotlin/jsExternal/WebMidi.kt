@@ -1,18 +1,32 @@
-@file:JsQualifier("WebMidi")
 @file:Suppress("INTERFACE_WITH_SUPERCLASS", "OVERRIDING_FINAL_MEMBER", "RETURN_TYPE_MISMATCH_ON_OVERRIDE", "CONFLICTING_OVERLOADS", "EXTERNAL_DELEGATION")
 
-package com.harry1453.klaunchpad.api.webmidi
+package jsExternal
 
 import org.khronos.webgl.Uint8Array
 import org.w3c.dom.AddEventListenerOptions
 import org.w3c.dom.EventInit
+import org.w3c.dom.Navigator
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.EventListener
 import org.w3c.dom.events.EventTarget
 import kotlin.js.Promise
+import kotlin.js.json
+
+/* extending interface from lib.dom.d.ts */
+inline fun Navigator.requestMIDIAccess(): Promise<MIDIAccess> = this.asDynamic().requestMIDIAccess() as Promise<MIDIAccess>
+
+inline fun Navigator.requestMIDIAccess(options: MIDIOptions): Promise<MIDIAccess> = this.asDynamic().requestMIDIAccess(options) as Promise<MIDIAccess>
+
+typealias MIDIInputMap = JsMap<String, MIDIInput>
+
+typealias MIDIOutputMap = JsMap<String, MIDIOutput>
 
 external interface MIDIOptions {
     var sysex: Boolean
+}
+
+fun midiOptions(sysex: Boolean): MIDIOptions {
+    return json(Pair("sysex", sysex)).unsafeCast<MIDIOptions>()
 }
 
 external interface MIDIAccess : EventTarget {

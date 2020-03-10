@@ -1,6 +1,7 @@
 import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.api.Launchpad
 import com.harry1453.klaunchpad.api.Pad
+import jsExternal.JsMap
 
 internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpad {
     override val gridColumnCount: Int
@@ -28,16 +29,20 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
         delegate.pulsePadLight(pad.toPad(), color.toColor())
     }
 
-    override fun batchSetPadLights(padsAndColors: Iterable<Pair<JsPad, JsColor>>) {
-        delegate.batchSetPadLights(padsAndColors.map { value -> value.first.toPad() to value.second.toColor() })
+    override fun batchSetPadLights(padsAndColors: JsMap<JsPad, JsColor>) {
+        delegate.batchSetPadLights(padsAndColors.toMap()
+            .mapKeys { (jsPad, _) -> jsPad.toPad() }
+            .mapValues { (_, jsColor) -> jsColor.toColor() })
     }
 
-    override fun batchSetRowLights(rowsAndColors: Iterable<Pair<Int, JsColor>>) {
-        delegate.batchSetRowLights(rowsAndColors.map { value -> value.first to value.second.toColor() })
+    override fun batchSetRowLights(rowsAndColors: JsMap<Int, JsColor>) {
+        delegate.batchSetRowLights(rowsAndColors.toMap()
+            .mapValues { (_, jsColor) -> jsColor.toColor() })
     }
 
-    override fun batchSetColumnLights(columnsAndColors: Iterable<Pair<Int, JsColor>>) {
-        delegate.batchSetColumnLights(columnsAndColors.map { value -> value.first to value.second.toColor() })
+    override fun batchSetColumnLights(columnsAndColors: JsMap<Int, JsColor>) {
+        delegate.batchSetColumnLights(columnsAndColors.toMap()
+            .mapValues { (_, jsColor) -> jsColor.toColor() })
     }
 
     override fun setAllPadLights(color: JsColor) {
@@ -80,8 +85,11 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
     override val maxNumberOfFaders: Int
         get() = delegate.maxNumberOfFaders
 
-    override fun setupFaderView(faders: Map<Int, Pair<JsColor, Byte>>, bipolar: Boolean) {
-        delegate.setupFaderView(faders.mapValues { (_, value) -> value.first.toColor() to value.second }, bipolar)
+    override fun setupFaderView(faders: JsMap<Int, FaderSettings>, bipolar: Boolean) {
+        delegate.setupFaderView(faders.toMap().mapValues { (_, faderSettings) ->
+            require(faderSettings.initialValue in 0..127) { "Fader initial value out of range: ${faderSettings.initialValue}, must be 0-127"}
+            faderSettings.color.toColor() to faderSettings.initialValue.toByte()
+        }, bipolar)
     }
 
     override fun updateFader(faderIndex: Int, value: Byte) {
@@ -116,7 +124,6 @@ internal class JsColorDelegate(internal val delegate: Color) : JsColor {
         get() = delegate.g.toInt()
     override val b: Int
         get() = delegate.b.toInt()
-
 }
 
 private fun Pad.toJsPad(): JsPad {
