@@ -4,6 +4,7 @@ package com.harry1453.launchpad.examples
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.Launchpad
+import com.harry1453.launchpad.api.connectToLaunchpadMK2
 
 // Try changing this value to observe the different modes.
 const val bipolarMode = true

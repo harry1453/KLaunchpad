@@ -41,6 +41,7 @@ kotlin {
                 useExperimentalAnnotation('kotlin.ExperimentalStdlibApi')
                 useExperimentalAnnotation('kotlin.contracts.ExperimentalContracts')
                 useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+                useExperimentalAnnotation('kotlinx.coroutines.ExperimentalCoroutinesApi')
             }
         }
 

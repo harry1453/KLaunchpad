@@ -16,7 +16,7 @@ import kotlin.collections.component2
  *
  * Only supports programmer layout and fader layout; there is no support for note layout or drum layout.
  */
-internal class LaunchpadPro : AbstractLaunchpad("Launchpad Pro") {
+internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevice) {
     override val gridColumnCount = 10
     override val gridColumnStart = -1
     override val gridRowCount = 10

@@ -4,6 +4,7 @@ package com.harry1453.launchpad.examples
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.Launchpad
+import com.harry1453.launchpad.api.connectToLaunchpadMK2
 import kotlin.random.Random
 
 /**
@@ -11,7 +12,7 @@ import kotlin.random.Random
  */
 fun main() {
     val random = Random(System.currentTimeMillis())
-    val launchpad = Launchpad.connectToLaunchpadMK2(userMode = true)
+    val launchpad = Launchpad.connectToLaunchpadMK2()
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
     launchpad.setPadButtonListener { pad, pressed, _ ->
         val padAbove = launchpad.getPad(pad.gridX, pad.gridY + 1)

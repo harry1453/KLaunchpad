@@ -1,30 +1,24 @@
 package com.harry1453.launchpad.api
 
 import com.harry1453.launchpad.api.webmidi.*
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
-import org.w3c.dom.events.EventListener
 import kotlin.browser.window
 import kotlin.js.json
 
-actual inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): Deferred<MidiDevice> {
-    return GlobalScope.async {
-        val midiAccess = window.navigator.requestMIDIAccess(json(Pair("sysex", true)).unsafeCast<MIDIOptions>()).await()
+actual suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+    val midiAccess = window.navigator.requestMIDIAccess(json(Pair("sysex", true)).unsafeCast<MIDIOptions>()).await()
 
-        val midiInput = midiAccess.inputs.values.map {
-            it to MidiDeviceInfo(it.name.orEmpty(), it.manufacturer.orEmpty(), it.version.orEmpty())
-        }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
+    val midiInput = midiAccess.inputs.values().toIterable().map {
+        it to MidiDeviceInfo(it.name.orEmpty(), it.manufacturer.orEmpty(), it.version.orEmpty())
+    }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
 
-        val midiOutput = midiAccess.outputs.values.map {
-            it to MidiDeviceInfo(it.name.orEmpty(), it.manufacturer.orEmpty(), it.version.orEmpty())
-        }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
+    val midiOutput = midiAccess.outputs.values().toIterable().map {
+        it to MidiDeviceInfo(it.name.orEmpty(), it.manufacturer.orEmpty(), it.version.orEmpty())
+    }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
 
-        return@async MidiDeviceImpl(midiInput.open().await(), midiOutput.open().await())
-    }
+    return MidiDeviceImpl(midiInput.open().await(), midiOutput.open().await())
 }
 
 class MidiDeviceImpl(private val midiInput: MIDIInput, private val midiOutput: MIDIOutput) : MidiDevice {
@@ -54,9 +48,8 @@ class MidiDeviceImpl(private val midiInput: MIDIInput, private val midiOutput: M
     }
 
     override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
-        midiInput.onmidimessage = EventListener {
-            val message = it.unsafeCast<MIDIMessageEvent>()
-            messageListener(message.data.toByteArray())
+        midiInput.onmidimessage = {
+            messageListener(it.data.toByteArray())
         }
     }
 

@@ -1,7 +1,5 @@
 package com.harry1453.launchpad.api
 
-import kotlinx.coroutines.Deferred
-
 data class MidiDeviceInfo(val name: String, val vendor: String, val version: String)
 
 interface MidiDevice : Closable {
@@ -22,4 +20,4 @@ interface MidiDevice : Closable {
  *
  * [deviceFilter] may be called on any thread.
  */
-expect inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): Deferred<MidiDevice>
+expect suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice

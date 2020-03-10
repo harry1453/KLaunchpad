@@ -2,6 +2,9 @@ package com.harry1453.launchpad.api
 
 import com.harry1453.launchpad.impl.launchpads.mk2.LaunchpadMk2
 import com.harry1453.launchpad.impl.launchpads.pro.LaunchpadPro
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 
 // TODO Support more Launchpads!
 
@@ -226,22 +229,27 @@ interface Launchpad : Closable {
 
     companion object {
         /**
-         * Connect to a Launchpad MK2.
-         * @param userMode `true` to use user mode, `false` to use session mode. No visible effect due to library abstractions.
+         * Asynchronously connect to a Launchpad MK2.
          * @throws Exception if we could not connect to a Launchpad MK2
          * TODO support for multiple devices connected
          */
-        fun connectToLaunchpadMK2(userMode: Boolean = false): Launchpad {
-            return LaunchpadMk2(userMode)
+        fun connectToLaunchpadMK2Async(): Deferred<Launchpad> {
+            return GlobalScope.async {
+                val midiDevice = openMidiDeviceAsync { it.name.toLowerCase().contains("Launchpad MK2".toLowerCase()) }
+                LaunchpadMk2(midiDevice, false)
+            }
         }
 
         /**
-         * Connect to a Launchpad PRO. WARNING: THIS IS COMPLETELY UNTESTED AS I DO NOT OWN A LAUNCHPAD PRO
+         * Asynchronously connect to a Launchpad Pro. WARNING: THIS IS COMPLETELY UNTESTED AS I DO NOT OWN A LAUNCHPAD PRO
          * @throws Exception if we could not connect to a Launchpad Pro
          * TODO support for multiple devices connected
          */
-        fun connectToLaunchpadPro(): Launchpad {
-            return LaunchpadPro()
+        fun connectToLaunchpadProAsync(): Deferred<Launchpad> {
+            return GlobalScope.async {
+                val midiDevice = openMidiDeviceAsync { it.name.toLowerCase().contains("Launchpad MK2".toLowerCase()) }
+                LaunchpadPro(midiDevice)
+            }
         }
     }
 }

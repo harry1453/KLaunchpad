@@ -1,16 +1,13 @@
 package com.harry1453.launchpad.impl
 
 import com.harry1453.launchpad.api.Launchpad
-import com.harry1453.launchpad.api.openMidiDeviceAsync
-import com.harry1453.launchpad.impl.util.blockingAwait
+import com.harry1453.launchpad.api.MidiDevice
 import kotlinx.coroutines.*
 
-abstract class AbstractLaunchpad(deviceName: String) : Launchpad {
-    protected val midiDevice = openMidiDeviceAsync {
-        it.name.toLowerCase().contains(deviceName.toLowerCase())
+abstract class AbstractLaunchpad(protected val midiDevice: MidiDevice) : Launchpad {
+    init {
+        midiDevice.setMessageListener { onMidiMessage(it) }
     }
-        .blockingAwait()
-        .apply { setMessageListener(this@AbstractLaunchpad::onMidiMessage) }
 
     abstract fun onMidiMessage(message: ByteArray)
 

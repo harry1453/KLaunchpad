@@ -4,6 +4,7 @@ package com.harry1453.launchpad.examples
 
 import com.harry1453.launchpad.api.Color
 import com.harry1453.launchpad.api.Launchpad
+import com.harry1453.launchpad.api.connectToLaunchpadMK2
 
 /**
  * This example demonstrates updating rows and columns.

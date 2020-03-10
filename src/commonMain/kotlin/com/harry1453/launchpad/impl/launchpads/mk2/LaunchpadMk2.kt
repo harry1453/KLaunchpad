@@ -12,8 +12,10 @@ import kotlin.collections.component2
 
 /**
  * Supports using session layout or user layout on the Launchpad, configured by [userMode], as well as fader layout.
+ *
+ * TODO find a use for [userMode]
  */
-internal class LaunchpadMk2(private val userMode: Boolean = false) : AbstractLaunchpad("Launchpad MK2") {
+internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolean) : AbstractLaunchpad(midiDevice) {
     override val gridColumnCount = 9
     override val gridColumnStart = 0
     override val gridRowCount = 9

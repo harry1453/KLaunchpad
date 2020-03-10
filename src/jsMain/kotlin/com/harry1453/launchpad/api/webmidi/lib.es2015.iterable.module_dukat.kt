@@ -4,7 +4,7 @@ package com.harry1453.launchpad.api.webmidi
 
 external interface IteratorResult<T> {
     var done: Boolean
-    var value: T
+    var value: T?
 }
 
 external interface TsStdLib_Iterator<T> {
@@ -16,3 +16,32 @@ external interface TsStdLib_Iterator<T> {
 }
 
 external interface IterableIterator<T> : TsStdLib_Iterator<T>
+
+fun <T> IterableIterator<T>.toIterable(): Iterable<T> {
+    return Iterable { this.getIterator() }
+}
+
+fun <T> IterableIterator<T>.getIterator(): Iterator<T> {
+    return object : Iterator<T> {
+        private var next: IteratorResult<T> = this@getIterator.next()
+        private var nextUsed: Boolean = false
+
+        private fun refreshNext() {
+            if (nextUsed) {
+                next = this@getIterator.next()
+                nextUsed = false
+            }
+        }
+
+        override fun hasNext(): Boolean {
+            refreshNext()
+            return !next.done
+        }
+
+        override fun next(): T {
+            refreshNext()
+            nextUsed = true
+            return next.value ?: error("No value available for next()")
+        }
+    }
+}

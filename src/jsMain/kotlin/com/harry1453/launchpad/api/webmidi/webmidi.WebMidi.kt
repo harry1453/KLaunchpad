@@ -55,7 +55,7 @@ external interface MIDIPort : EventTarget {
 
 external interface MIDIInput : MIDIPort {
     override var type: String /* 'input' */
-    var onmidimessage: EventListener
+    var onmidimessage: (MIDIMessageEvent) -> Unit
     fun addEventListener(type: String /* 'midimessage' */, listener: (self: MIDIInput /* this */, e: MIDIMessageEvent) -> Any, options: Boolean = definedExternally)
     fun addEventListener(type: String /* 'midimessage' */, listener: (self: MIDIInput /* this */, e: MIDIMessageEvent) -> Any, options: AddEventListenerOptions = definedExternally)
     fun addEventListener(type: String /* 'statechange' */, listener: (self: MIDIInput /* this */, e: MIDIConnectionEvent) -> Any, options: Boolean = definedExternally)
