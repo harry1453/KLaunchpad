@@ -244,6 +244,11 @@ interface JsLaunchpad {
      */
     @JsName("exitFaderView")
     fun exitFaderView()
+
+    /**
+     * Close the connection to the Launchpad, turning off all lights in the process.
+     */
+    fun close()
 }
 
 @JsName("Pad")

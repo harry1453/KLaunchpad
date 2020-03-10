@@ -223,6 +223,11 @@ interface Launchpad : Closable {
      */
     fun exitFaderView()
 
+    /**
+     * Close the connection to the Launchpad, turning off all lights in the process.
+     */
+    override fun close()
+
     /*
     TODO: device enquiry, version enquiry
      */

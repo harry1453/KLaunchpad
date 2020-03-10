@@ -95,6 +95,10 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
     override fun exitFaderView() {
         delegate.exitFaderView()
     }
+
+    override fun close() {
+        delegate.close()
+    }
 }
 
 private class JsPadDelegate(internal val delegate: Pad) : JsPad {

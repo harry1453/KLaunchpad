@@ -48,6 +48,9 @@ abstract class AbstractLaunchpad(protected val midiDevice: MidiDevice) : Launchp
         get() = !(autoClockJob?.isActive ?: false) && midiDevice.isClosed
 
     override fun close() {
+        stopScrollingText()
+        exitFaderView()
+        clearAllPadsLights()
         autoClockJob?.cancel()
         midiDevice.close()
     }
