@@ -15,7 +15,7 @@ fun main() {
     val launchpad = Launchpad.connectToLaunchpadMK2()
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
     launchpad.setPadButtonListener { pad, pressed, _ ->
-        val color = Color(random.nextInt(1, 128), random.nextInt(1, 128), random.nextInt(1, 128))
+        val color = Color(random.nextInt(1, 256), random.nextInt(1, 256), random.nextInt(1, 256))
         if (pressed) {
             launchpad.batchSetRowLights(mapOf(pad.gridY to color))
             launchpad.batchSetColumnLights(mapOf(pad.gridX to color))

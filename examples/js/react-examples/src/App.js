@@ -20,6 +20,8 @@ class App extends React.Component {
         this.example_differentLightingModes = this.example_differentLightingModes.bind(this);
         this.example_enterBootloader = this.example_enterBootloader.bind(this);
         this.example_faders = this.example_faders.bind(this);
+        this.example_fadersUnipolar = this.example_fadersUnipolar.bind(this);
+        this.example_fadersBipolar = this.example_fadersBipolar.bind(this);
         this.example_flashPressedPad = this.example_flashPressedPad.bind(this);
         this.example_helloWorld = this.example_helloWorld.bind(this);
         this.example_lightAllWhenPressed = this.example_lightAllWhenPressed.bind(this);
@@ -28,10 +30,14 @@ class App extends React.Component {
         this.example_lightPressedPad = this.example_lightPressedPad.bind(this);
     }
 
+    static randomColor() {
+        return KLaunchpad.color(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255));
+    }
+
     resetLaunchpad() {
         this.state.launchpad.exitFaderView();
         this.state.launchpad.stopScrollingText();
-        this.state.launchpad.clearAllPadsLights(); // TODO
+        this.state.launchpad.clearAllPadLights();
         this.state.launchpad.setPadButtonListener(null);
         this.state.launchpad.setFaderUpdateListener(null);
         this.state.launchpad.setTextScrollFinishedListener(null);
@@ -97,13 +103,21 @@ class App extends React.Component {
         }
     }
 
-    example_faders() { // TODO bipolar
+    example_faders(bipolar) {
         if (this.state.launchpad != null) {
             this.resetLaunchpad();
-            this.setState({currentExample: "Faders"});
+            this.setState({currentExample: (bipolar ? "Bipolar" : "Unipolar") + " Faders"});
 
             // TODO
         }
+    }
+
+    example_fadersUnipolar() {
+        this.example_faders(false)
+    }
+
+    example_fadersBipolar() {
+        this.example_faders(true)
     }
 
     example_flashPressedPad() {
@@ -138,8 +152,8 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: "Light All Pads When Pressed"});
 
-            const color = KLaunchpad.color(0, 50, 255);
             this.state.launchpad.setPadButtonListener((pad, pressed, velocity) => {
+                const color = App.randomColor();
                 if (pressed) {
                     this.state.launchpad.setAllPadLights(color);
                 } else {
@@ -155,7 +169,7 @@ class App extends React.Component {
             this.setState({currentExample: "Light Around Pressed Pad"});
 
             this.state.launchpad.setPadButtonListener((pad, pressed, velocity) => {
-                const color = pressed ? KLaunchpad.color(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)) : KLaunchpad.BLACK;
+                const color = pressed ? App.randomColor() : KLaunchpad.BLACK;
                 const padAbove = this.state.launchpad.getPad(pad.gridX, pad.gridY + 1);
                 const padBelow = this.state.launchpad.getPad(pad.gridX, pad.gridY - 1);
                 const padLeft = this.state.launchpad.getPad(pad.gridX - 1, pad.gridY);
@@ -178,7 +192,7 @@ class App extends React.Component {
             this.setState({currentExample: "Light Pressed Coordinate"});
 
             this.state.launchpad.setPadButtonListener((pad, pressed, velocity) => {
-                const color = pressed ? KLaunchpad.color(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)) : KLaunchpad.BLACK;
+                const color = pressed ? App.randomColor() : KLaunchpad.BLACK;
                 const mapX = new Map();
                 const mapY = new Map();
                 mapX.set(pad.gridX, color);
@@ -194,8 +208,8 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: "Light Pressed Pad"});
 
-            const color = KLaunchpad.color(0, 50, 255);
             this.state.launchpad.setPadButtonListener((pad, pressed, velocity) => {
+                const color = App.randomColor();
                 if (pressed) {
                     this.state.launchpad.setPadLight(pad, color);
                 } else {
@@ -217,7 +231,8 @@ class App extends React.Component {
                     {connectButton}
                     <button onClick={this.example_differentLightingModes}>{"Example: Different Lighting Modes"}</button>
                     <button onClick={this.example_enterBootloader}>{"Example: Enter Bootloader (Will disconnect Launchpad!)"}</button>
-                    <button onClick={this.example_faders}>{"Example: Unipolar Faders"}</button>
+                    <button onClick={this.example_fadersUnipolar}>{"Example: Unipolar Faders"}</button>
+                    <button onClick={this.example_fadersBipolar}>{"Example: Bipolar Faders"}</button>
                     <button onClick={this.example_flashPressedPad}>{"Example: Flash Pressed Pad"}</button>
                     <button onClick={this.example_helloWorld}>{"Example: Hello World"}</button>
                     <button onClick={this.example_lightAllWhenPressed}>{"Example: Light All Pads When Pressed"}</button>

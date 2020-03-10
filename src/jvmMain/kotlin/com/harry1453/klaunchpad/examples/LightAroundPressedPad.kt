@@ -21,7 +21,7 @@ fun main() {
         val padRight = launchpad.getPad(pad.gridX + 1, pad.gridY)
         val pads = listOfNotNull(pad, padAbove, padBelow, padLeft, padRight)
         if (pressed) {
-            val color = Color(random.nextInt(1, 128), random.nextInt(1, 128), random.nextInt(1, 128))
+            val color = Color(random.nextInt(1, 256), random.nextInt(1, 256), random.nextInt(1, 256))
             launchpad.batchSetPadLights(pads.map { it to color }.toMap())
         } else {
             launchpad.batchSetPadLights(pads.map { it to Color.BLACK }.toMap())
