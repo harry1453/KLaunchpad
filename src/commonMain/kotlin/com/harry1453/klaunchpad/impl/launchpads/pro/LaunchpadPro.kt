@@ -85,28 +85,27 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         setPadLightColor(pad, color, 2)
     }
 
-    override fun batchSetPadLights(padsAndColors: Iterable<Pair<Pad, Color>>) {
-        midiDevice.sendSysEx(padsAndColors.mapNotNull {
-                val pad = it.first
+    override fun batchSetPadLights(padsAndColors: Map<Pad, Color>) {
+        midiDevice.sendSysEx(padsAndColors.mapNotNull { (pad, color) ->
                 require(pad is LaunchpadProPad)
                 // Don't update non-edge pads in fader mode
                 if (faderLayout && !pad.isEdgePad) return@mapNotNull null
-                sysExMessageSetPad + (pad.midiCode) + it.second.toVelocity() + 0xF7
+                sysExMessageSetPad + (pad.midiCode) + color.toVelocity() + 0xF7
             }
             .reduce { acc, bytes -> acc + bytes })
     }
 
-    override fun batchSetRowLights(rowsAndColors: Iterable<Pair<Int, Color>>) {
+    override fun batchSetRowLights(rowsAndColors: Map<Int, Color>) {
         // TODO check sizes and indexes
-        midiDevice.sendSysEx(rowsAndColors.map {
-            sysExMessageSetRow + it.first.toByte() + it.second.toVelocity() + 0xF7
+        midiDevice.sendSysEx(rowsAndColors.map { (rowIndex, color) ->
+            sysExMessageSetRow + rowIndex.toByte() + color.toVelocity() + 0xF7
         }.reduce { acc, bytes -> acc + bytes })
     }
 
-    override fun batchSetColumnLights(columnsAndColors: Iterable<Pair<Int, Color>>) {
+    override fun batchSetColumnLights(columnsAndColors: Map<Int, Color>) {
         // TODO check sizes and indexes
-        midiDevice.sendSysEx(columnsAndColors.map {
-            sysExMessageSetColumn + it.first.toByte() + it.second.toVelocity() + 0xF7
+        midiDevice.sendSysEx(columnsAndColors.map { (columnIndex, color) ->
+            sysExMessageSetColumn + columnIndex.toByte() + color.toVelocity() + 0xF7
         }.reduce { acc, bytes -> acc + bytes })
     }
 

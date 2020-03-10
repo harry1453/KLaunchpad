@@ -15,11 +15,11 @@ fun main() {
     Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
     launchpad.setPadButtonListener { pad, pressed, _ ->
         if (pressed) {
-            launchpad.batchSetRowLights(listOf(Pair(pad.gridY, color)))
-            launchpad.batchSetColumnLights(listOf(Pair(pad.gridX, color)))
+            launchpad.batchSetRowLights(mapOf(pad.gridY to color))
+            launchpad.batchSetColumnLights(mapOf(pad.gridX to color))
         } else {
-            launchpad.batchSetRowLights(listOf(Pair(pad.gridY, Color.BLACK)))
-            launchpad.batchSetColumnLights(listOf(Pair(pad.gridX, Color.BLACK)))
+            launchpad.batchSetRowLights(mapOf(pad.gridY to Color.BLACK))
+            launchpad.batchSetColumnLights(mapOf(pad.gridX to Color.BLACK))
         }
     }
 }

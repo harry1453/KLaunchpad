@@ -86,19 +86,19 @@ interface Launchpad : Closable {
      * Set lots of Pad LEDs at once.
      * @param padsAndColors A list of Pads and the color that their LED should be set to.
      */
-    fun batchSetPadLights(padsAndColors: Iterable<Pair<Pad, Color>>)
+    fun batchSetPadLights(padsAndColors: Map<Pad, Color>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color
      * @param rowsAndColors A list of row indexes and the color that row should be set to.
      */
-    fun batchSetRowLights(rowsAndColors: Iterable<Pair<Int, Color>>)
+    fun batchSetRowLights(rowsAndColors: Map<Int, Color>)
 
     /**
      * Bulk update columns of Pad LEDs to be all one color
      * @param columnsAndColors A list of column indexes and the color that column should be set to.
      */
-    fun batchSetColumnLights(columnsAndColors: Iterable<Pair<Int, Color>>)
+    fun batchSetColumnLights(columnsAndColors: Map<Int, Color>)
 
     /**
      * Set all Pad LEDs to [color].

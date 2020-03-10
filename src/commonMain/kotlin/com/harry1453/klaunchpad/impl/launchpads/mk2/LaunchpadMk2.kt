@@ -87,22 +87,22 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
         setPadLightColor(pad, color, 2)
     }
 
-    override fun batchSetPadLights(padsAndColors: Iterable<Pair<Pad, Color>>) {
-        midiDevice.sendSysEx(padsAndColors.map { sysExMessageSetPad + it.first.sessionMidiCode + it.second.toVelocity() + 0xF7 }
+    override fun batchSetPadLights(padsAndColors: Map<Pad, Color>) {
+        midiDevice.sendSysEx(padsAndColors.map { (pad, color) -> sysExMessageSetPad + pad.sessionMidiCode + color.toVelocity() + 0xF7 }
             .reduce { acc, bytes -> acc + bytes })
     }
 
-    override fun batchSetRowLights(rowsAndColors: Iterable<Pair<Int, Color>>) {
+    override fun batchSetRowLights(rowsAndColors: Map<Int, Color>) {
         // TODO check sizes and indexes
-        midiDevice.sendSysEx(rowsAndColors.map {
-            sysExMessageSetRow + it.first.toByte() + it.second.toVelocity() + 0xF7
+        midiDevice.sendSysEx(rowsAndColors.map { (rowIndex, color) ->
+            sysExMessageSetRow + rowIndex.toByte() + color.toVelocity() + 0xF7
         }.reduce { acc, bytes -> acc + bytes })
     }
 
-    override fun batchSetColumnLights(columnsAndColors: Iterable<Pair<Int, Color>>) {
+    override fun batchSetColumnLights(columnsAndColors: Map<Int, Color>) {
         // TODO check sizes and indexes
-        midiDevice.sendSysEx(columnsAndColors.map {
-            sysExMessageSetColumn + it.first.toByte() + it.second.toVelocity() + 0xF7
+        midiDevice.sendSysEx(columnsAndColors.map { (columnIndex, color) ->
+            sysExMessageSetColumn + columnIndex.toByte() + color.toVelocity() + 0xF7
         }.reduce { acc, bytes -> acc + bytes })
     }
 
