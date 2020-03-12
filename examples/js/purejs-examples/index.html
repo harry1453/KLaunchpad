@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KLaunchpad Examples</title>
+    <link rel="stylesheet" href="index.css" />
+    <script type="text/javascript" src="KLaunchpad.js"></script><!-- TODO replace with distributed version -->
+    <script type="text/javascript" src="index.js"></script>
+</head>
+<body>
+    <div>
+        <p>Currently Running Example: <span id="currentlyRunningExample">Disconnected</span></p>
+        <div>
+            <button id="connectMK2Button" onClick="connectMK2()">Connect to Launchpad MK2</button>
+            <button id="connectProButton" onClick="connectPro()">Connect to Launchpad Pro</button>
+            <button id="disconnectButton" onClick="disconnect()" style="display: none">Disconnect from Launchpad</button>
+        </div>
+        <br />
+        <button onClick="example_differentLightingModes()">Example: Different Lighting Modes</button>
+        <button onClick="example_enterBootloader()">Example: Enter Bootloader (Will disconnect Launchpad!)</button>
+        <button onClick="example_fadersUnipolar()">Example: Unipolar Faders</button>
+        <button onClick="example_fadersBipolar()">Example: Bipolar Faders</button>
+        <button onClick="example_flashPressedPad()">Example: Flash Pressed Pad</button>
+        <button onClick="example_helloWorld()">Example: Hello World</button>
+        <button onClick="example_lightAllWhenPressed()">Example: Light All Pads When Pressed</button>
+        <button onClick="example_lightAroundPressedPad()">Example: Light Around Pressed Pad</button>
+        <button onClick="example_lightPressedCoordinate()">Example: Light Pressed Coordinate</button>
+        <button onClick="example_lightPressedPad()">Example: Light Pressed Pad</button>
+    </div>
+</body>
+</html>
