@@ -24,7 +24,14 @@ kotlin {
         }
     }
     js {
-        browser()
+        browser {
+            dceTask {
+                keep 'KLaunchpad.connectToLaunchpadMK2', 'KLaunchpad.connectToLaunchpadPro'
+            }
+            testTask {
+                enabled = false
+            }
+        }
     }
     mingwX64("windows") {
         binaries {
