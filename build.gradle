@@ -26,7 +26,7 @@ kotlin {
     js {
         browser {
             dceTask {
-                keep 'KLaunchpad.connectToLaunchpadMK2', 'KLaunchpad.connectToLaunchpadPro'
+                keep 'KLaunchpad.connectToLaunchpadMK2', 'KLaunchpad.connectToLaunchpadPro', 'KLaunchpad.BLACK', 'KLaunchpad.color', 'KLaunchpad.faderSettings'
             }
             testTask {
                 enabled = false

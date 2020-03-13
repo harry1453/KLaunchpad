@@ -11,9 +11,7 @@ function resetLaunchpad() {
     launchpad.setPadButtonListener(null);
     launchpad.setFaderUpdateListener(null);
     launchpad.setTextScrollFinishedListener(null);
-    // eslint-disable-next-line react/no-direct-mutation-state
     launchpad.autoClockEnabled = false;
-    // eslint-disable-next-line react/no-direct-mutation-state
     launchpad.autoClockTempo = 120;
 }
 
@@ -27,7 +25,7 @@ function connect(promise) {
         setCurrentExample("None, Connected to Launchpad");
         document.getElementById("connectMK2Button").style.display = 'none';
         document.getElementById("connectProButton").style.display = 'none';
-        document.getElementById("disconnectButton").style.display = 'block';
+        document.getElementById("disconnectButton").style.display = 'inline';
     })
         .catch(e => {
             alert("Could not connect to Launchpad.");
@@ -46,15 +44,13 @@ function connectMK2() {
 function disconnect() {
     launchpad.close();
     setCurrentExample("Disconnected");
-    document.getElementById("connectMK2Button").style.display = 'block';
-    document.getElementById("connectProButton").style.display = 'block';
+    document.getElementById("connectMK2Button").style.display = 'inline';
+    document.getElementById("connectProButton").style.display = 'inline';
     document.getElementById("disconnectButton").style.display = 'none';
 }
 
 function setupAutoClock(bpm) {
-    // eslint-disable-next-line react/no-direct-mutation-state
     launchpad.autoClockEnabled = true;
-    // eslint-disable-next-line react/no-direct-mutation-state
     launchpad.autoClockTempo = bpm;
 }
 
