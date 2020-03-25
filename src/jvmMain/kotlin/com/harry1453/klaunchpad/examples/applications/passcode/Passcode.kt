@@ -78,7 +78,7 @@ object Passcode {
         val padBelow = launchpad.getPad(pad.gridX, pad.gridY - 1)
         val padLeft = launchpad.getPad(pad.gridX - 1, pad.gridY)
         val padRight = launchpad.getPad(pad.gridX + 1, pad.gridY)
-        val pads = listOfNotNull(pad, padAbove, padBelow, padLeft, padRight)
+        val pads = listOf(pad, padAbove, padBelow, padLeft, padRight)
         if (pressed) {
             val color = Color(random.nextInt(1, 256), random.nextInt(1, 256), random.nextInt(1, 256))
             launchpad.batchSetPadLights(pads.map { it to color }.toMap())

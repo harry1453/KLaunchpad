@@ -58,17 +58,16 @@ class App extends React.Component {
     }
 
     connectPro() {
-        this.connect(KLaunchpad.connectToLaunchpadPro())
+        this.connect(KLaunchpad.connectToLaunchpadPro());
     }
 
     connectMK2() {
-        this.connect(KLaunchpad.connectToLaunchpadMK2())
+        this.connect(KLaunchpad.connectToLaunchpadMK2());
     }
 
     disconnect() {
         this.state.launchpad.close();
         this.setState({launchpad: null, currentExample: "Disconnected"});
-        console.log("Disconnected.");
     }
 
     setupAutoClock(bpm) {
@@ -99,7 +98,6 @@ class App extends React.Component {
             this.state.launchpad.enterBootloader();
             this.state.launchpad.close();
             this.setState({launchpad: null, currentExample: "Disconnected"});
-            console.log("Disconnected.");
         }
     }
 
@@ -108,16 +106,58 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: (bipolar ? "Bipolar" : "Unipolar") + " Faders"});
 
-            // TODO
+            // FIXME this doesn't work :(
+
+            const color1 = KLaunchpad.color(0, 0, 255);
+            const color2 = KLaunchpad.color(255, 100, 50);
+            const color3 = KLaunchpad.color(0, 50, 255);
+            const color4 = KLaunchpad.color(255, 50, 255);
+            const color5 = KLaunchpad.color(0, 255, 0);
+            const color6 = KLaunchpad.color(255, 50, 0);
+            const color7 = KLaunchpad.color(200, 200, 255);
+            const color8 = KLaunchpad.color(255, 0, 0);
+            const color9 = KLaunchpad.color(0, 255, 255);
+
+            const faders = new Map();
+            faders.set(0, KLaunchpad.faderSettings(color1, 15 - bipolar ? 63 : 0));
+            faders.set(1, KLaunchpad.faderSettings(color2, 31 - bipolar ? 63 : 0));
+            faders.set(2, KLaunchpad.faderSettings(color3, 47 - bipolar ? 63 : 0));
+            faders.set(3, KLaunchpad.faderSettings(color4, 63 - bipolar ? 63 : 0));
+            faders.set(4, KLaunchpad.faderSettings(color5, 79 - bipolar ? 63 : 0));
+            faders.set(5, KLaunchpad.faderSettings(color6, 95 - bipolar ? 63 : 0));
+            faders.set(6, KLaunchpad.faderSettings(color7, 111 - bipolar ? 63 : 0));
+            faders.set(7, KLaunchpad.faderSettings(color8, 127) - bipolar ? 63 : 0);
+            this.state.launchpad.setupFaderView(faders, bipolar);
+
+            this.state.launchpad.setFaderUpdateListener((faderIndex, faderValue) => {
+                console.log("Fader " + faderIndex + " updated to " + faderValue);
+            });
+
+            this.state.launchpad.setPadButtonListener((pad, pressed, velocity) => {
+                if (pressed && pad.gridX === 8) { // Right column of edge buttons
+                    // Update every fader
+                    let faderValue = pad.gridY * 127 / 7;
+                    if (bipolar) faderValue = faderValue - 64;
+                    for (let i = 0; i < 8; i++) {
+                        this.state.launchpad.updateFader(i, faderValue);
+                    }
+                }
+            });
+
+            // Update the right edge lights. We can't do a bulk update because it bugs the launchpad (fader lights don't update)
+            for (let i = 0; i < 8; i++) {
+                const pad = this.state.launchpad.getPad(8, i);
+                this.state.launchpad.setPadLight(pad, color9);
+            }
         }
     }
 
     example_fadersUnipolar() {
-        this.example_faders(false)
+        this.example_faders(false);
     }
 
     example_fadersBipolar() {
-        this.example_faders(true)
+        this.example_faders(true);
     }
 
     example_flashPressedPad() {
@@ -176,11 +216,10 @@ class App extends React.Component {
                 const padRight = this.state.launchpad.getPad(pad.gridX + 1, pad.gridY);
                 const map = new Map();
                 map.set(pad, color);
-                // The pads we got might be null because a pad may not exist in that location.
-                if (padAbove != null) map.set(padAbove, color);
-                if (padBelow != null) map.set(padBelow, color);
-                if (padLeft != null) map.set(padLeft, color);
-                if (padRight != null) map.set(padRight, color);
+                map.set(padAbove, color);
+                map.set(padBelow, color);
+                map.set(padLeft, color);
+                map.set(padRight, color);
                 this.state.launchpad.batchSetPadLights(map);
             });
         }
@@ -223,23 +262,21 @@ class App extends React.Component {
         const connectButton = this.state.launchpad == null ?
             (<div><button onClick={this.connectPro}>Connect to Launchpad Pro</button>
                 <button onClick={this.connectMK2}>Connect to Launchpad MK2</button></div>)
-            : (<button onClick={this.disconnect}>Disconnect Launchpad</button>);
+            : (<button onClick={this.disconnect}>Disconnect from Launchpad</button>);
         return (
-            <div className="App">
-                <header className="App-header">
-                    <p>Currently Running Example: {this.state.currentExample}</p>
-                    {connectButton}
-                    <button onClick={this.example_differentLightingModes}>{"Example: Different Lighting Modes"}</button>
-                    <button onClick={this.example_enterBootloader}>{"Example: Enter Bootloader (Will disconnect Launchpad!)"}</button>
-                    <button onClick={this.example_fadersUnipolar}>{"Example: Unipolar Faders"}</button>
-                    <button onClick={this.example_fadersBipolar}>{"Example: Bipolar Faders"}</button>
-                    <button onClick={this.example_flashPressedPad}>{"Example: Flash Pressed Pad"}</button>
-                    <button onClick={this.example_helloWorld}>{"Example: Hello World"}</button>
-                    <button onClick={this.example_lightAllWhenPressed}>{"Example: Light All Pads When Pressed"}</button>
-                    <button onClick={this.example_lightAroundPressedPad}>{"Example: Light Around Pressed Pad"}</button>
-                    <button onClick={this.example_lightPressedCoordinate}>{"Example: Light Pressed Coordinate"}</button>
-                    <button onClick={this.example_lightPressedPad}>{"Example: Light Pressed Pad"}</button>
-                </header>
+            <div>
+                <p>Currently Running Example: {this.state.currentExample}</p>
+                {connectButton}
+                <button onClick={this.example_differentLightingModes}>{"Example: Different Lighting Modes"}</button>
+                <button onClick={this.example_enterBootloader}>{"Example: Enter Bootloader (Will disconnect Launchpad!)"}</button>
+                <button onClick={this.example_fadersUnipolar}>{"Example: Unipolar Faders"}</button>
+                <button onClick={this.example_fadersBipolar}>{"Example: Bipolar Faders"}</button>
+                <button onClick={this.example_flashPressedPad}>{"Example: Flash Pressed Pad"}</button>
+                <button onClick={this.example_helloWorld}>{"Example: Hello World"}</button>
+                <button onClick={this.example_lightAllWhenPressed}>{"Example: Light All Pads When Pressed"}</button>
+                <button onClick={this.example_lightAroundPressedPad}>{"Example: Light Around Pressed Pad"}</button>
+                <button onClick={this.example_lightPressedCoordinate}>{"Example: Light Pressed Coordinate"}</button>
+                <button onClick={this.example_lightPressedPad}>{"Example: Light Pressed Pad"}</button>
             </div>
         );
     }

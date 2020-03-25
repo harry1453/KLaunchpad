@@ -65,30 +65,32 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         this.padUpdateListener = listener
     }
 
-    private fun setPadLightColor(pad: Pad, color: Color, channel: Int) {
-        require(pad is LaunchpadProPad)
+    private fun setPadLightColor(pad: LaunchpadProPad, color: Color, channel: Int) {
         // Don't update non-edge pads in fader mode
         if (faderLayout && !pad.isEdgePad) return
         val messageType = if (pad.isEdgePad) MidiDevice.MessageType.ControlChange else if (color == Color.BLACK) MidiDevice.MessageType.NoteOff else MidiDevice.MessageType.NoteOn
         midiDevice.sendMessage(channel, pad.midiCode, color.toVelocity(), messageType)
     }
 
-    override fun setPadLight(pad: Pad, color: Color) {
+    override fun setPadLight(pad: Pad?, color: Color) {
+        if (pad !is LaunchpadProPad) return
         setPadLightColor(pad, color, 0)
     }
 
-    override fun flashPadLight(pad: Pad, color1: Color, color2: Color) {
+    override fun flashPadLight(pad: Pad?, color1: Color, color2: Color) {
+        if (pad !is LaunchpadProPad) return
         setPadLightColor(pad, color1, 0)
         setPadLightColor(pad, color2, 1)
     }
 
-    override fun pulsePadLight(pad: Pad, color: Color) {
+    override fun pulsePadLight(pad: Pad?, color: Color) {
+        if (pad !is LaunchpadProPad) return
         setPadLightColor(pad, color, 2)
     }
 
-    override fun batchSetPadLights(padsAndColors: Map<Pad, Color>) {
+    override fun batchSetPadLights(padsAndColors: Map<Pad?, Color>) {
         midiDevice.sendSysEx(padsAndColors.mapNotNull { (pad, color) ->
-                require(pad is LaunchpadProPad)
+                if (pad !is LaunchpadProPad) return@mapNotNull null
                 // Don't update non-edge pads in fader mode
                 if (faderLayout && !pad.isEdgePad) return@mapNotNull null
                 sysExMessageSetPad + (pad.midiCode) + color.toVelocity() + 0xF7
@@ -173,7 +175,6 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
     override fun updateFader(faderIndex: Int, value: Byte) {
         val faderValue = if (bipolarFaders) value + 63 else value.toInt()
         require(faderIndex in 0..7) { "Fader index must be 0-7" }
-        require(faderValue >= 0) { "Fader value out of range" }
         midiDevice.sendMessage(0, faderIndex + 0x15, faderValue, MidiDevice.MessageType.ControlChange)
     }
 

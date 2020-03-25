@@ -61,8 +61,8 @@ fun main() {
 
     fun exitFaderView() {
         launchpad.exitFaderView()
-        launchpad.setPadLight(launchpad.getPad(4, 8)!!, Color(0, 255, 0))
-        launchpad.setPadLight(launchpad.getPad(7, 8)!!, Color(0, 0, 50))
+        launchpad.setPadLight(launchpad.getPad(4, 8), Color(0, 255, 0))
+        launchpad.setPadLight(launchpad.getPad(7, 8), Color(0, 0, 50))
         faderMode = false
     }
 
@@ -77,8 +77,8 @@ fun main() {
             6 to Pair(color7, fader6value),
             7 to Pair(color8, fader7value)
         ), bipolar = bipolarMode)
-        launchpad.setPadLight(launchpad.getPad(4, 8)!!, Color(0, 50, 0))
-        launchpad.setPadLight(launchpad.getPad(7, 8)!!, Color(0, 0, 255))
+        launchpad.setPadLight(launchpad.getPad(4, 8), Color(0, 50, 0))
+        launchpad.setPadLight(launchpad.getPad(7, 8), Color(0, 0, 255))
 
         // We can't do a bulk update because it bugs the launchpad (fader lights don't update)
         (0..7).forEach {

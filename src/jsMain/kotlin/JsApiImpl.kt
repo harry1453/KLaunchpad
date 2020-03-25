@@ -21,27 +21,27 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
         }
     }
 
-    override fun setPadLight(pad: JsPad, color: JsColor) {
+    override fun setPadLight(pad: JsPad?, color: JsColor) {
         delegate.setPadLight(pad.toPad(), color.toColor())
     }
 
-    override fun clearPadLight(pad: JsPad) {
+    override fun clearPadLight(pad: JsPad?) {
         delegate.clearPadLight(pad.toPad())
     }
 
-    override fun flashPadLight(pad: JsPad, color1: JsColor, color2: JsColor) {
+    override fun flashPadLight(pad: JsPad?, color1: JsColor, color2: JsColor) {
         delegate.flashPadLight(pad.toPad(), color1.toColor(), color2.toColor())
     }
 
-    override fun flashPadLight(pad: JsPad, color: JsColor) {
+    override fun flashPadLight(pad: JsPad?, color: JsColor) {
         delegate.flashPadLight(pad.toPad(), color.toColor())
     }
 
-    override fun pulsePadLight(pad: JsPad, color: JsColor) {
+    override fun pulsePadLight(pad: JsPad?, color: JsColor) {
         delegate.pulsePadLight(pad.toPad(), color.toColor())
     }
 
-    override fun batchSetPadLights(padsAndColors: JsMap<JsPad, JsColor>) {
+    override fun batchSetPadLights(padsAndColors: JsMap<JsPad?, JsColor>) {
         delegate.batchSetPadLights(padsAndColors.toMap()
             .mapKeys { (jsPad, _) -> jsPad.toPad() }
             .mapValues { (_, jsColor) -> jsColor.toColor() })
@@ -146,8 +146,8 @@ private fun Pad.toJsPad(): JsPad {
     return JsPadDelegate(this)
 }
 
-private fun JsPad.toPad(): Pad {
-    require(this is JsPadDelegate)
+private fun JsPad?.toPad(): Pad? {
+    if (this !is JsPadDelegate) return null
     return this.delegate
 }
 

@@ -6,8 +6,6 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 
-// TODO Support more Launchpads!
-
 /**
  * A Launchpad is a grid of [Pad]s, which are comprised of an LED and a Button.
  * The grid is indexed by the bottom left pad of the main grid area being (0,0),
@@ -59,34 +57,46 @@ interface Launchpad : Closable {
 
     /**
      * Set [pad]'s LED to solid [color]. Passing [Color.BLACK] turns off the pad.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun setPadLight(pad: Pad, color: Color)
+    fun setPadLight(pad: Pad?, color: Color)
 
     /**
      * Turn off [pad]'s LED.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun clearPadLight(pad: Pad) = setPadLight(pad, Color.BLACK)
+    fun clearPadLight(pad: Pad?) = setPadLight(pad, Color.BLACK)
 
     /**
      * Flash [pad]'s LED between [color1] and [color2], toggling between the two colors every half beat.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun flashPadLight(pad: Pad, color1: Color, color2: Color)
+    fun flashPadLight(pad: Pad?, color1: Color, color2: Color)
 
     /**
      * Flash [pad]'s LED between off and [color], toggling between the two states every half beat (Period of 1 beat).
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun flashPadLight(pad: Pad, color: Color) = flashPadLight(pad, Color.BLACK, color)
+    fun flashPadLight(pad: Pad?, color: Color) = flashPadLight(pad, Color.BLACK, color)
 
     /**
      * Pulse [pad]'s LED between 25% and 100% brightness, with a period of 2 beats.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun pulsePadLight(pad: Pad, color: Color)
+    fun pulsePadLight(pad: Pad?, color: Color)
 
     /**
      * Set lots of Pad LEDs at once.
      * @param padsAndColors A list of Pads and the color that their LED should be set to.
+     *
+     * Skips a pad if it is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if it does not belong to this Launchpad.
      */
-    fun batchSetPadLights(padsAndColors: Map<Pad, Color>)
+    fun batchSetPadLights(padsAndColors: Map<Pad?, Color>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color

@@ -14,7 +14,7 @@ fun main() {
     val blue = Color(0, 0, 255)
     launchpad.autoClockEnabled = true
     launchpad.autoClockTempo = 60
-    launchpad.flashPadLight(launchpad.getPad(0, 0)!!, red)
-    launchpad.setPadLight(launchpad.getPad(1, 0)!!, green)
-    launchpad.pulsePadLight(launchpad.getPad(2, 0)!!, blue)
+    launchpad.flashPadLight(launchpad.getPad(0, 0), red)
+    launchpad.setPadLight(launchpad.getPad(1, 0), green)
+    launchpad.pulsePadLight(launchpad.getPad(2, 0), blue)
 }

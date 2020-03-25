@@ -55,40 +55,50 @@ interface JsLaunchpad {
 
     /**
      * Set [pad]'s LED to solid [color]. Passing [BLACK] turns off the pad.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
     @JsName("setPadLight")
-    fun setPadLight(pad: JsPad, color: JsColor)
+    fun setPadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Turn off [pad]'s LED.
      */
     @JsName("clearPadLight")
-    fun clearPadLight(pad: JsPad)
+    fun clearPadLight(pad: JsPad?)
 
     /**
      * Flash [pad]'s LED between [color1] and [color2], toggling between the two colors every half beat.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
     @JsName("flashPadLight")
-    fun flashPadLight(pad: JsPad, color1: JsColor, color2: JsColor)
+    fun flashPadLight(pad: JsPad?, color1: JsColor, color2: JsColor)
 
     /**
      * Flash [pad]'s LED between off and [color], toggling between the two states every half beat.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
     @JsName("flashPadLightOnAndOff")
-    fun flashPadLight(pad: JsPad, color: JsColor)
+    fun flashPadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Pulse [pad]'s LED between 25% and 100% brightness, with a period of 2 beats.
+     *
+     * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
     @JsName("pulsePadLight")
-    fun pulsePadLight(pad: JsPad, color: JsColor)
+    fun pulsePadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Set lots of Pad LEDs at once.
      * @param padsAndColors A list of Pads and the color that their LED should be set to.
+     *
+     * Skips a pad if it is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if it does not belong to this Launchpad.
      */
     @JsName("batchSetPadLights")
-    fun batchSetPadLights(padsAndColors: JsMap<JsPad, JsColor>)
+    fun batchSetPadLights(padsAndColors: JsMap<JsPad?, JsColor>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color

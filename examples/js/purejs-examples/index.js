@@ -152,11 +152,10 @@ function example_lightAroundPressedPad() {
             const padRight = launchpad.getPad(pad.gridX + 1, pad.gridY);
             const map = new Map();
             map.set(pad, color);
-            // The pads we got might be null because a pad may not exist in that location.
-            if (padAbove != null) map.set(padAbove, color);
-            if (padBelow != null) map.set(padBelow, color);
-            if (padLeft != null) map.set(padLeft, color);
-            if (padRight != null) map.set(padRight, color);
+            map.set(padAbove, color);
+            map.set(padBelow, color);
+            map.set(padLeft, color);
+            map.set(padRight, color);
             launchpad.batchSetPadLights(map);
         });
     }

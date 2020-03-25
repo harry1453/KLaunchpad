@@ -59,37 +59,33 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
         }
     }
 
-    private val Pad.sessionMidiCode: Int
-        get() {
-            require(this is LaunchpadMk2Pad)
-            return this.sessionMidiCode
-        }
-
     override fun setPadButtonListener(listener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)?) {
         this.padUpdateListener = listener
     }
 
-    private fun setPadLightColor(pad: Pad, color: Color, channel: Int) {
-        require(pad is LaunchpadMk2Pad)
+    private fun setPadLightColor(pad: LaunchpadMk2Pad, color: Color, channel: Int) {
         val messageType = if (pad.isControlChange) MidiDevice.MessageType.ControlChange else if (color == Color.BLACK) MidiDevice.MessageType.NoteOff else MidiDevice.MessageType.NoteOn
         midiDevice.sendMessage(channel, if (userMode) pad.userMidiCode else pad.sessionMidiCode, color.toVelocity(), messageType)
     }
 
-    override fun setPadLight(pad: Pad, color: Color) {
+    override fun setPadLight(pad: Pad?, color: Color) {
+        if (pad !is LaunchpadMk2Pad) return
         setPadLightColor(pad, color, 0)
     }
 
-    override fun flashPadLight(pad: Pad, color1: Color, color2: Color) {
+    override fun flashPadLight(pad: Pad?, color1: Color, color2: Color) {
+        if (pad !is LaunchpadMk2Pad) return
         setPadLightColor(pad, color1, 0)
         setPadLightColor(pad, color2, 1)
     }
 
-    override fun pulsePadLight(pad: Pad, color: Color) {
+    override fun pulsePadLight(pad: Pad?, color: Color) {
+        if (pad !is LaunchpadMk2Pad) return
         setPadLightColor(pad, color, 2)
     }
 
-    override fun batchSetPadLights(padsAndColors: Map<Pad, Color>) {
-        midiDevice.sendSysEx(padsAndColors.map { (pad, color) -> sysExMessageSetPad + pad.sessionMidiCode + color.toVelocity() + 0xF7 }
+    override fun batchSetPadLights(padsAndColors: Map<Pad?, Color>) {
+        midiDevice.sendSysEx(padsAndColors.mapNotNull { (pad, color) -> sysExMessageSetPad + (if (pad is LaunchpadMk2Pad) pad.sessionMidiCode else return@mapNotNull null) + color.toVelocity() + 0xF7 }
             .reduce { acc, bytes -> acc + bytes })
     }
 
@@ -167,7 +163,6 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
     override fun updateFader(faderIndex: Int, value: Byte) {
         val faderValue = if (bipolarFaders) value + 63 else value.toInt()
         require(faderIndex in 0..7) { "Fader index must be 0-7" }
-        require(faderValue >= 0) { "Fader value out of range" }
         midiDevice.sendMessage(0, faderIndex + 0x15, faderValue, MidiDevice.MessageType.ControlChange)
     }
 
