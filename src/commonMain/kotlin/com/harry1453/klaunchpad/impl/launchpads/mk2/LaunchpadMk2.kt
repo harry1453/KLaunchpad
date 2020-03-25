@@ -71,7 +71,8 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
 
     private fun setPadLightColor(pad: Pad, color: Color, channel: Int) {
         require(pad is LaunchpadMk2Pad)
-        midiDevice.sendMessage(channel, if (userMode) pad.userMidiCode else pad.sessionMidiCode, color.toVelocity(), if (pad.isControlChange) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+        val messageType = if (pad.isControlChange) MidiDevice.MessageType.ControlChange else if (color == Color.BLACK) MidiDevice.MessageType.NoteOff else MidiDevice.MessageType.NoteOn
+        midiDevice.sendMessage(channel, if (userMode) pad.userMidiCode else pad.sessionMidiCode, color.toVelocity(), messageType)
     }
 
     override fun setPadLight(pad: Pad, color: Color) {

@@ -112,6 +112,7 @@ task preparePublishNpm() {
         }
         copy {
             from "$projectDir/src/jsMain/resources/package.json"
+            from "$projectDir/README.md"
             into "$projectDir/build/js/packages/KLaunchpad/"
         }
         def path = "$projectDir/build/js/packages/KLaunchpad/".replace("\\", File.separator).replace("/", File.separator)

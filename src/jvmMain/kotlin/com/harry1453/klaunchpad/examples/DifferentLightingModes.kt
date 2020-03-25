@@ -8,6 +8,7 @@ import com.harry1453.klaunchpad.api.connectToLaunchpadMK2
 
 fun main() {
     val launchpad = Launchpad.connectToLaunchpadMK2()
+    Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
     val red = Color(255, 0, 0)
     val green = Color(0, 255, 0)
     val blue = Color(0, 0, 255)

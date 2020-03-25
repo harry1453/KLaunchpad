@@ -47,6 +47,7 @@ Available Examples:
 ### JVM (Java, Kotlin, Groovy, Scala etc)
 
 * [Kotlin Examples](src/jvmMain/kotlin/com/harry1453/klaunchpad/examples) (The API is the same as Java)
+* [Kotlin Applications](src/jvmMain/kotlin/com/harry1453/klaunchpad/examples/applications) - These are some more complex applications that make use of the launchpad. Not part of the standard sample set.
 
 ### JS (JavaScript, TypeScript)
 

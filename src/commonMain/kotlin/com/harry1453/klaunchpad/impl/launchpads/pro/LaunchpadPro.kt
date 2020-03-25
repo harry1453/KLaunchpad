@@ -69,7 +69,8 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
         require(pad is LaunchpadProPad)
         // Don't update non-edge pads in fader mode
         if (faderLayout && !pad.isEdgePad) return
-        midiDevice.sendMessage(channel, pad.midiCode, color.toVelocity(), if (pad.isEdgePad) MidiDevice.MessageType.ControlChange else MidiDevice.MessageType.NoteOn)
+        val messageType = if (pad.isEdgePad) MidiDevice.MessageType.ControlChange else if (color == Color.BLACK) MidiDevice.MessageType.NoteOff else MidiDevice.MessageType.NoteOn
+        midiDevice.sendMessage(channel, pad.midiCode, color.toVelocity(), messageType)
     }
 
     override fun setPadLight(pad: Pad, color: Color) {
