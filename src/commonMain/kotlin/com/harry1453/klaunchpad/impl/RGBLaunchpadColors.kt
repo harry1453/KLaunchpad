@@ -10,7 +10,7 @@ private fun hexStringToColor(hexString: String): Color {
     return Color(r, g, b)
 }
 
-private val VELOCITY_TO_COLOR: Array<Color> = Array(128) { Color.BLACK }.apply {
+internal val VELOCITY_TO_COLOR: Array<Color> = Array(128) { Color.BLACK }.apply {
     this[0] = hexStringToColor("000000")
     this[1] = hexStringToColor("1c1c1c")
     this[2] = hexStringToColor("7c7c7c")
