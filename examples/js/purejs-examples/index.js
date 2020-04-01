@@ -82,9 +82,50 @@ function example_enterBootloader() {
 function example_faders(bipolar) {
     if (launchpad != null) {
         resetLaunchpad();
-        setCurrentExample((bipolar ? "Bipolar" : "Unipolar") + " Faders");
+        setCurrentExample((bipolar ? "Bipolar" : "Unipolar") + " Faders (Look in console for fader values)");
 
-        // TODO
+        const color1 = KLaunchpad.color(0, 0, 255);
+        const color2 = KLaunchpad.color(255, 100, 50);
+        const color3 = KLaunchpad.color(0, 50, 255);
+        const color4 = KLaunchpad.color(255, 50, 255);
+        const color5 = KLaunchpad.color(0, 255, 0);
+        const color6 = KLaunchpad.color(255, 50, 0);
+        const color7 = KLaunchpad.color(200, 200, 255);
+        const color8 = KLaunchpad.color(255, 0, 0);
+        const color9 = KLaunchpad.color(0, 255, 255);
+
+        const faders = new Map();
+        const offset = bipolar ? 63 : 0;
+        faders.set(0, KLaunchpad.faderSettings(color1, 15 - offset));
+        faders.set(1, KLaunchpad.faderSettings(color2, 31 - offset));
+        faders.set(2, KLaunchpad.faderSettings(color3, 47 - offset));
+        faders.set(3, KLaunchpad.faderSettings(color4, 63 - offset));
+        faders.set(4, KLaunchpad.faderSettings(color5, 79 - offset));
+        faders.set(5, KLaunchpad.faderSettings(color6, 95 - offset));
+        faders.set(6, KLaunchpad.faderSettings(color7, 111 - offset));
+        faders.set(7, KLaunchpad.faderSettings(color8, 127 - offset));
+        launchpad.setupFaderView(faders, bipolar);
+
+        launchpad.setFaderUpdateListener((faderIndex, faderValue) => {
+            console.log("Fader " + faderIndex + " updated to " + faderValue);
+        });
+
+        launchpad.setPadButtonListener((pad, pressed, velocity) => {
+            if (pressed && pad.gridX === 8) { // Right column of edge buttons
+                // Update every fader
+                let faderValue = pad.gridY * 127 / 7;
+                if (bipolar) faderValue = faderValue - 64;
+                for (let i = 0; i < 8; i++) {
+                    launchpad.updateFader(i, faderValue);
+                }
+            }
+        });
+
+        // Update the right edge lights. We can't do a bulk update because it bugs the launchpad (fader lights don't update)
+        for (let i = 0; i < 8; i++) {
+            const pad = launchpad.getPad(8, i);
+            launchpad.setPadLight(pad, color9);
+        }
     }
 }
 

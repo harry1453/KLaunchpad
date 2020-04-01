@@ -1,5 +1,4 @@
 import React from 'react';
-import './App.css';
 import KLaunchpad from 'klaunchpad';
 
 class App extends React.Component {
@@ -104,9 +103,7 @@ class App extends React.Component {
     example_faders(bipolar) {
         if (this.state.launchpad != null) {
             this.resetLaunchpad();
-            this.setState({currentExample: (bipolar ? "Bipolar" : "Unipolar") + " Faders"});
-
-            // FIXME this doesn't work :(
+            this.setState({currentExample: (bipolar ? "Bipolar" : "Unipolar") + " Faders (Look in console for fader values)"});
 
             const color1 = KLaunchpad.color(0, 0, 255);
             const color2 = KLaunchpad.color(255, 100, 50);
@@ -119,14 +116,15 @@ class App extends React.Component {
             const color9 = KLaunchpad.color(0, 255, 255);
 
             const faders = new Map();
-            faders.set(0, KLaunchpad.faderSettings(color1, 15 - bipolar ? 63 : 0));
-            faders.set(1, KLaunchpad.faderSettings(color2, 31 - bipolar ? 63 : 0));
-            faders.set(2, KLaunchpad.faderSettings(color3, 47 - bipolar ? 63 : 0));
-            faders.set(3, KLaunchpad.faderSettings(color4, 63 - bipolar ? 63 : 0));
-            faders.set(4, KLaunchpad.faderSettings(color5, 79 - bipolar ? 63 : 0));
-            faders.set(5, KLaunchpad.faderSettings(color6, 95 - bipolar ? 63 : 0));
-            faders.set(6, KLaunchpad.faderSettings(color7, 111 - bipolar ? 63 : 0));
-            faders.set(7, KLaunchpad.faderSettings(color8, 127) - bipolar ? 63 : 0);
+            const offset = bipolar ? 63 : 0;
+            faders.set(0, KLaunchpad.faderSettings(color1, 15 - offset));
+            faders.set(1, KLaunchpad.faderSettings(color2, 31 - offset));
+            faders.set(2, KLaunchpad.faderSettings(color3, 47 - offset));
+            faders.set(3, KLaunchpad.faderSettings(color4, 63 - offset));
+            faders.set(4, KLaunchpad.faderSettings(color5, 79 - offset));
+            faders.set(5, KLaunchpad.faderSettings(color6, 95 - offset));
+            faders.set(6, KLaunchpad.faderSettings(color7, 111 - offset));
+            faders.set(7, KLaunchpad.faderSettings(color8, 127 - offset));
             this.state.launchpad.setupFaderView(faders, bipolar);
 
             this.state.launchpad.setFaderUpdateListener((faderIndex, faderValue) => {
@@ -260,8 +258,8 @@ class App extends React.Component {
 
     render() {
         const connectButton = this.state.launchpad == null ?
-            (<div><button onClick={this.connectPro}>Connect to Launchpad Pro</button>
-                <button onClick={this.connectMK2}>Connect to Launchpad MK2</button></div>)
+            (<div><button onClick={this.connectMK2}>Connect to Launchpad MK2</button>
+                <button onClick={this.connectPro}>Connect to Launchpad Pro</button></div>)
             : (<button onClick={this.disconnect}>Disconnect from Launchpad</button>);
         return (
             <div>

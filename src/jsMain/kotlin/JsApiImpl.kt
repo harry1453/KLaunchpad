@@ -103,7 +103,7 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
 
     override fun setupFaderView(faders: JsMap<Int, FaderSettings>, bipolar: Boolean) {
         delegate.setupFaderView(faders.toMap().mapValues { (_, faderSettings) ->
-            require(faderSettings.initialValue in 0..127) { "Fader initial value out of range: ${faderSettings.initialValue}, must be 0-127"}
+            require(faderSettings.initialValue in if (bipolar) -63..64 else 0..127) { "Fader value must be in range " + (if (bipolar) "-63-64" else "0-127") + " (was ${faderSettings.initialValue})" }
             faderSettings.color.toColor() to faderSettings.initialValue.toByte()
         }, bipolar)
     }

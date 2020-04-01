@@ -154,15 +154,15 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
         enterFaderMode(bipolar)
         midiDevice.sendSysEx(faders.map { (faderIndex, pair) ->
             val color = pair.first
-            val initialValue = if (bipolar) pair.second + 63 else pair.second.toInt()
-            require(initialValue >= 0) { "Fader value must be 0-127" }
+            val initialValue = if (bipolar) (pair.second + 63).toByte() else pair.second
+            require(initialValue in 0..127) { "Fader value must be in range " + (if (bipolar) "-63-64" else "0-127") + " (was $initialValue)" }
             sysExMessageSetupFader + faderIndex + (if (bipolar) 0x01 else 0x00) + color.toVelocity() + initialValue + 0xF7
         }.reduce { acc, bytes -> acc + bytes })
     }
 
     override fun updateFader(faderIndex: Int, value: Byte) {
         val faderValue = if (bipolarFaders) value + 63 else value.toInt()
-        require(faderIndex in 0..7) { "Fader index must be 0-7" }
+        require(faderIndex in 0..7) { "Fader index must be 0-7 (was $faderIndex)" }
         midiDevice.sendMessage(0, faderIndex + 0x15, faderValue, MidiDevice.MessageType.ControlChange)
     }
 
