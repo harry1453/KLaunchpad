@@ -10,7 +10,7 @@ object WindowsMidiApi {
     val midiInAddBuffer: CPointer<CFunction<(hmi: HMIDIIN, pmg: LPMIDIHDR, cbmh: UINT) -> MMRESULT>>?
     val midiInClose: CPointer<CFunction<(hmi: HMIDIIN) -> MMRESULT>>?
     val midiInGetDevCaps: CPointer<CFunction<(uDeviceID: UINT, pmic: LPMIDIINCAPS, cbmic: UINT) -> MMRESULT>>?
-    val midiInGetErrorText: CPointer<CFunction<(mmrError: MMRESULT, pszText: LPSTR, cchText: UINT) -> MMRESULT>>?
+    val midiInGetErrorText: CPointer<CFunction<(mmrError: MMRESULT, pszText: LPWSTR, cchText: UINT) -> MMRESULT>>?
     val midiInGetID: CPointer<CFunction<(hmi: HMIDIIN, puDeviceID: LPUINT) -> MMRESULT>>?
     val midiInGetNumDevs: CPointer<CFunction<() -> UINT>>?
     val midiInMessage: CPointer<CFunction<(hmi: HMIDIIN, uMsg: UINT, dw1: DWORD_PTR, dw2: DWORD_PTR) -> MMRESULT>>?
@@ -24,7 +24,7 @@ object WindowsMidiApi {
     val midiOutCachePatches: CPointer<CFunction<(hmo: HMIDIOUT, uBank: UINT, pwpa: LPWORD, fuCache: UINT) -> MMRESULT>>?
     val midiOutClose: CPointer<CFunction<(hmo: HMIDIOUT) -> MMRESULT>>?
     val midiOutGetDevCaps: CPointer<CFunction<(uDeviceID: UINT, pmoc: LPMIDIOUTCAPS, cbmoc: UINT) -> MMRESULT>>?
-    val midiOutGetErrorText: CPointer<CFunction<(mmrError: MMRESULT, pszText: LPSTR, cchText: UINT) -> MMRESULT>>?
+    val midiOutGetErrorText: CPointer<CFunction<(mmrError: MMRESULT, pszText: LPWSTR, cchText: UINT) -> MMRESULT>>?
     val midiOutGetID: CPointer<CFunction<(hmo: HMIDIOUT, puDeviceID: LPUINT) -> MMRESULT>>?
     val midiOutGetNumDevs: CPointer<CFunction<() -> UINT>>?
     val midiOutGetVolume: CPointer<CFunction<(hmo: HMIDIOUT, pdwVolume: LPDWORD) -> MMRESULT>>?
@@ -92,8 +92,8 @@ object WindowsMidiApi {
             midiDisconnect = GetProcAddress(dll, "midiDisconnect")?.reinterpret()
             midiInAddBuffer = GetProcAddress(dll, "midiInAddBuffer")?.reinterpret()
             midiInClose = GetProcAddress(dll, "midiInClose")?.reinterpret()
-            midiInGetDevCaps = GetProcAddress(dll, "midiInGetDevCaps")?.reinterpret()
-            midiInGetErrorText = GetProcAddress(dll, "midiInGetErrorText")?.reinterpret()
+            midiInGetDevCaps = GetProcAddress(dll, "midiInGetDevCapsW")?.reinterpret()
+            midiInGetErrorText = GetProcAddress(dll, "midiInGetErrorTextW")?.reinterpret()
             midiInGetID = GetProcAddress(dll, "midiInGetID")?.reinterpret()
             midiInGetNumDevs = GetProcAddress(dll, "midiInGetNumDevs")?.reinterpret()
             midiInMessage = GetProcAddress(dll, "midiInMessage")?.reinterpret()
@@ -106,8 +106,8 @@ object WindowsMidiApi {
             midiOutCacheDrumPatches = GetProcAddress(dll, "midiOutCacheDrumPatches")?.reinterpret()
             midiOutCachePatches = GetProcAddress(dll, "midiOutCachePatches")?.reinterpret()
             midiOutClose = GetProcAddress(dll, "midiOutClose")?.reinterpret()
-            midiOutGetDevCaps = GetProcAddress(dll, "midiOutGetDevCaps")?.reinterpret()
-            midiOutGetErrorText = GetProcAddress(dll, "midiOutGetErrorText")?.reinterpret()
+            midiOutGetDevCaps = GetProcAddress(dll, "midiOutGetDevCapsW")?.reinterpret()
+            midiOutGetErrorText = GetProcAddress(dll, "midiOutGetErrorTextW")?.reinterpret()
             midiOutGetID = GetProcAddress(dll, "midiOutGetID")?.reinterpret()
             midiOutGetNumDevs = GetProcAddress(dll, "midiOutGetNumDevs")?.reinterpret()
             midiOutGetVolume = GetProcAddress(dll, "midiOutGetVolume")?.reinterpret()
@@ -127,6 +127,24 @@ object WindowsMidiApi {
             midiStreamProperty = GetProcAddress(dll, "midiStreamProperty")?.reinterpret()
             midiStreamRestart = GetProcAddress(dll, "midiStreamRestart")?.reinterpret()
             midiStreamStop = GetProcAddress(dll, "midiStreamStop")?.reinterpret()
+        }
+    }
+
+    fun checkError(mm: MMRESULT): String? {
+        if (mm == MMSYSERR_NOERROR.toUInt()) return null
+        memScoped {
+            val stringBuffer = allocArray<UShortVar>(100)
+            if (WindowsMidiApi.midiOutGetErrorText == null) return "DLL Not Loaded" // Compiler bug: The smart cast does not work if you remove explicit WindowsMidiApi TODO report!
+            val retVal = WindowsMidiApi.midiOutGetErrorText(mm, stringBuffer, 100.toUInt())
+            if (retVal != MMSYSERR_NOERROR.toUInt()) return "Error fetching error message"
+            return stringBuffer.toKString()
+        }
+    }
+
+    fun throwIfError(mm: MMRESULT) {
+        val error = checkError(mm)
+        if (error != null) {
+            throw Exception(error)
         }
     }
 }

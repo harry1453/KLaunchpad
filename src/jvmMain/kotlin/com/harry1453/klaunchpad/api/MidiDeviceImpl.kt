@@ -3,16 +3,16 @@ package com.harry1453.klaunchpad.api
 import javax.sound.midi.*
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 
-actual suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
     // TODO take advantage of parallelism
-    val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().map {
-        Pair(it, MidiDeviceInfo(it.name, it.vendor, it.version))
+    val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().mapIndexed { index, device ->
+        Pair(device, MidiDeviceInfo(device.name, device.version, index))
     }
-        .firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
-    val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().map {
-        Pair(it, MidiDeviceInfo(it.name, it.vendor, it.version))
+        .firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find first device")
+    val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().mapIndexed { index, device ->
+        Pair(device, MidiDeviceInfo(device.name, device.version, index))
     }
-        .filter { deviceFilter(it.second) }.getOrNull(1)?.first ?: error("Could not find device")
+        .filter { deviceFilter(it.second) }.getOrNull(1)?.first ?: error("Could not find second device")
     val firstDevice: JvmMidiDevice = MidiSystem.getMidiDevice(firstDeviceInfo)
     val secondDevice: JvmMidiDevice = MidiSystem.getMidiDevice(secondDeviceInfo)
     val outputDevice = when {

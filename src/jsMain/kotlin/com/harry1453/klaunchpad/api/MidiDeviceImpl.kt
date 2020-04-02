@@ -10,16 +10,17 @@ import org.khronos.webgl.get
 import toMap
 import kotlin.browser.window
 
-actual suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
     val midiAccess = window.navigator.requestMIDIAccess(midiOptions(sysex = true)).await()
 
+    var index = 0
     val midiInput = midiAccess.inputs.toMap().map { (deviceId, device) ->
-        device to MidiDeviceInfo(device.name.orEmpty(), device.manufacturer.orEmpty(), device.version.orEmpty())
-    }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
+        device to MidiDeviceInfo(device.name.orEmpty(), device.version.orEmpty(), index++)
+    }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find input device")
 
     val midiOutput = midiAccess.outputs.toMap().map { (deviceId, device) ->
-        device to MidiDeviceInfo(device.name.orEmpty(), device.manufacturer.orEmpty(), device.version.orEmpty())
-    }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find device")
+        device to MidiDeviceInfo(device.name.orEmpty(), device.version.orEmpty(), index++)
+    }.firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find output device")
 
     return MidiDeviceImpl(midiInput.open().await(), midiOutput.open().await())
 }

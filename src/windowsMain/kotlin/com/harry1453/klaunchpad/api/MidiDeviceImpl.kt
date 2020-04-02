@@ -1,53 +1,122 @@
 package com.harry1453.klaunchpad.api
 
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.cValue
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.sizeOf
+import kotlinx.cinterop.*
 import platform.windows.*
 
-actual suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    // TODO calling any of the midi functions breaks the linker...
-    val inputDeviceCount = midiInGetNumDevs().toInt()
-    val outputDeviceCount = midiOutGetNumDevs().toInt()
+actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+    val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!().toInt()
+    val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!().toInt()
+
+    var inputDeviceID: UInt? = null
     for (i in 0 until inputDeviceCount) {
+        if (inputDeviceID != null) break
         memScoped {
-            val capabilities: CValue<MIDIINCAPS> = cValue()
-            val cap = midiInGetDevCapsW(i.toULong(), capabilities.getPointer(this), sizeOf<MIDIINCAPS>().toUInt())
-            println(cap)
+            val capabilities = alloc<MIDIINCAPS>()
+            val retVal = WindowsMidiApi.midiInGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+            if (deviceFilter(MidiDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i))) {
+                inputDeviceID = i.toUInt()
+                // TODO we can't break because memScoped does not have a contract...
+            }
         }
     }
+    if (inputDeviceID == null) error("Could not find input device")
+
+    var outputDeviceID: UInt? = null
     for (i in 0 until outputDeviceCount) {
+        if (outputDeviceID != null) break
         memScoped {
-            val capabilities: CValue<MIDIOUTCAPS> = cValue()
-            val cap = midiOutGetDevCapsW(i.toULong(), capabilities.getPointer(this), sizeOf<MIDIOUTCAPS>().toUInt())
-            println(cap)
+            val capabilities = alloc<MIDIOUTCAPS>()
+            val retVal = WindowsMidiApi.midiOutGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIOUTCAPS>().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+            if (deviceFilter(MidiDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i + inputDeviceCount))) {
+                outputDeviceID = i.toUInt()
+                // TODO we can't break because memScoped does not have a contract...
+            }
         }
     }
-    TODO()
+    if (outputDeviceID == null) error("Could not find output device")
+
+    val outputDevice = nativeHeap.alloc<HMIDIOUTVar>()
+    var retVal = WindowsMidiApi.midiOutOpen!!(outputDevice.ptr, outputDeviceID!!, 0.toULong(), 0.toULong(), CALLBACK_NULL.toUInt())
+    WindowsMidiApi.throwIfError(retVal)
+
+    val midiDeviceHolder = Holder<MidiDeviceImpl>()
+    val midiDeviceHolderRef = StableRef.create(midiDeviceHolder)
+
+    val inputDevice = nativeHeap.alloc<HMIDIINVar>()
+    retVal = WindowsMidiApi.midiInOpen!!(inputDevice.ptr, inputDeviceID!!, staticCFunction(::midiInCallback).rawValue.toLong().toULong(), midiDeviceHolderRef.asCPointer().rawValue.toLong().toULong(), CALLBACK_FUNCTION.toUInt())
+    WindowsMidiApi.throwIfError(retVal)
+    retVal = WindowsMidiApi.midiInStart!!(inputDevice.value!!)
+    WindowsMidiApi.throwIfError(retVal)
+
+    val midiDevice = MidiDeviceImpl(inputDevice, outputDevice, midiDeviceHolderRef)
+    midiDeviceHolder.value = midiDevice
+    return midiDevice
 }
 
-class MidiDeviceImpl : MidiDevice {
+fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: COpaquePointer, dwParam1: DWORD_PTR, dwParam2: DWORD_PTR) {
+    initRuntimeIfNeeded()
+    val midiDeviceHolder = dwInstance.asStableRef<Holder<MidiDeviceImpl>>().get()
+    if (midiDeviceHolder.value == null) return
+    when(wMsg.toInt()) {
+        MIM_DATA -> {
+            val decodedInt = dwParam1.toInt().toBytesLE()
+            val messageBytes = ByteArray(3)
+            decodedInt.copyInto(messageBytes, endIndex = messageBytes.size)
+            midiDeviceHolder.value?.messageListener?.invoke(messageBytes)
+        }
+        MIM_LONGDATA -> {
+            // TODO
+        }
+    }
+}
+
+class MidiDeviceImpl(private val inputDevice: HMIDIINVar, private val outputDevice: HMIDIOUTVar, private val midiDeviceHolderRef: StableRef<Holder<MidiDeviceImpl>>) : MidiDevice {
+    override var isClosed: Boolean = false
+
+    var messageListener: ((ByteArray) -> Unit)? = null
+
     override fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MidiDevice.MessageType) {
-        TODO("Not yet implemented")
+        val firstByte = (when(messageType) {
+            MidiDevice.MessageType.NoteOff -> 0x80
+            MidiDevice.MessageType.NoteOn -> 0x90
+            MidiDevice.MessageType.ControlChange -> 0xB0
+        } or (channel and 0xF)).toByte()
+        val data = byteArrayOf(firstByte, data1.toByte(), data2.toByte(), 0x00)
+        WindowsMidiApi.midiOutShortMsg!!(outputDevice.value!!, data.toIntLE().toUInt())
     }
 
     override fun sendSysEx(bytes: ByteArray) {
-        TODO("Not yet implemented")
+        // TODO
     }
 
     override fun clock() {
-        TODO("Not yet implemented")
+        // TODO
     }
 
     override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
-        TODO("Not yet implemented")
+        this.messageListener = messageListener
     }
-
-    override val isClosed: Boolean
-        get() = TODO("Not yet implemented")
 
     override fun close() {
-        TODO("Not yet implemented")
+        var retVal = WindowsMidiApi.midiInStop!!(inputDevice.value!!)
+        WindowsMidiApi.throwIfError(retVal)
+
+        retVal = WindowsMidiApi.midiInClose!!(inputDevice.value!!)
+        WindowsMidiApi.throwIfError(retVal)
+        retVal = WindowsMidiApi.midiOutClose!!(outputDevice.value!!)
+        WindowsMidiApi.throwIfError(retVal)
+
+        midiDeviceHolderRef.dispose()
+
+        nativeHeap.free(inputDevice)
+        nativeHeap.free(outputDevice)
+
+        isClosed = true
     }
+}
+
+class Holder<T> {
+    var value: T? = null
 }

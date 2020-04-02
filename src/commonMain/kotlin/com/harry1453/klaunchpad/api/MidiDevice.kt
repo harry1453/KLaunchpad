@@ -1,6 +1,10 @@
 package com.harry1453.klaunchpad.api
 
-data class MidiDeviceInfo(val name: String, val vendor: String, val version: String)
+data class MidiDeviceInfo(
+    val name: String,
+    val version: String,
+    val index: Int
+)
 
 interface MidiDevice : Closable {
     fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MessageType)
@@ -20,4 +24,4 @@ interface MidiDevice : Closable {
  *
  * [deviceFilter] may be called on any thread.
  */
-expect suspend inline fun openMidiDeviceAsync(crossinline deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice
+expect suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice
