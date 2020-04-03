@@ -5,7 +5,6 @@ import platform.windows.Sleep
 import kotlin.random.Random
 
 fun main() {
-    Platform.isMemoryLeakCheckerActive = false // FIXME
     val random = Random.Default
     val launchpad = runBlocking { Launchpad.connectToLaunchpadMK2Async().await() }
     launchpad.setPadButtonListener { pad, pressed, _ ->

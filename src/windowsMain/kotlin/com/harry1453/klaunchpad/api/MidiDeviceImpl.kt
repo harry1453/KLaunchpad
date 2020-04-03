@@ -55,9 +55,10 @@ actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> 
     return midiDevice
 }
 
-fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: COpaquePointer, dwParam1: DWORD_PTR, dwParam2: DWORD_PTR) {
+@Suppress("UNUSED_PARAMETER")
+fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: DWORD_PTR, dwParam1: DWORD_PTR, dwParam2: DWORD_PTR) {
     initRuntimeIfNeeded()
-    val midiDeviceHolder = dwInstance.asStableRef<Holder<MidiDeviceImpl>>().get()
+    val midiDeviceHolder = dwInstance.toLong().toCPointer<CPointed>()!!.asStableRef<Holder<MidiDeviceImpl>>().get()
     if (midiDeviceHolder.value == null) return
     when(wMsg.toInt()) {
         MIM_DATA -> {
@@ -67,7 +68,10 @@ fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: COpaquePointer, dwParam
             midiDeviceHolder.value?.messageListener?.invoke(messageBytes)
         }
         MIM_LONGDATA -> {
-            // TODO
+            val midiHdr = dwParam1.toLong().toCPointer<MIDIHDR>()!!.pointed
+            val buffer = ByteArray(midiHdr.dwBytesRecorded.toInt())
+            for (i in 0 until midiHdr.dwBytesRecorded.toInt()) buffer[i] = midiHdr.lpData!![i]
+            midiDeviceHolder.value?.messageListener?.invoke(buffer)
         }
     }
 }
