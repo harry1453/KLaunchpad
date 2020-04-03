@@ -133,9 +133,9 @@ object WindowsMidiApi {
     fun checkError(mm: MMRESULT): String? {
         if (mm == MMSYSERR_NOERROR.toUInt()) return null
         memScoped {
-            val stringBuffer = allocArray<UShortVar>(100)
+            val stringBuffer = allocArray<UShortVar>(256)
             if (WindowsMidiApi.midiOutGetErrorText == null) return "DLL Not Loaded" // Compiler bug: The smart cast does not work if you remove explicit WindowsMidiApi TODO report!
-            val retVal = WindowsMidiApi.midiOutGetErrorText(mm, stringBuffer, 100.toUInt())
+            val retVal = WindowsMidiApi.midiOutGetErrorText(mm, stringBuffer, 256u)
             if (retVal != MMSYSERR_NOERROR.toUInt()) return "Error fetching error message"
             return stringBuffer.toKString()
         }

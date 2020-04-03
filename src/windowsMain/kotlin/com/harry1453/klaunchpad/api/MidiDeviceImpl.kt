@@ -38,7 +38,7 @@ actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> 
     if (outputDeviceID == null) error("Could not find output device")
 
     val outputDevice = nativeHeap.alloc<HMIDIOUTVar>()
-    var retVal = WindowsMidiApi.midiOutOpen!!(outputDevice.ptr, outputDeviceID!!, 0.toULong(), 0.toULong(), CALLBACK_NULL.toUInt())
+    var retVal = WindowsMidiApi.midiOutOpen!!(outputDevice.ptr, outputDeviceID!!, 0u, 0u, CALLBACK_NULL.toUInt())
     WindowsMidiApi.throwIfError(retVal)
 
     val midiDeviceHolder = Holder<MidiDeviceImpl>()
@@ -84,15 +84,33 @@ class MidiDeviceImpl(private val inputDevice: HMIDIINVar, private val outputDevi
             MidiDevice.MessageType.ControlChange -> 0xB0
         } or (channel and 0xF)).toByte()
         val data = byteArrayOf(firstByte, data1.toByte(), data2.toByte(), 0x00)
-        WindowsMidiApi.midiOutShortMsg!!(outputDevice.value!!, data.toIntLE().toUInt())
+        val retVal = WindowsMidiApi.midiOutShortMsg!!(outputDevice.value!!, data.toIntLE().toUInt())
+        WindowsMidiApi.throwIfError(retVal)
     }
 
     override fun sendSysEx(bytes: ByteArray) {
-        // TODO
+        memScoped {
+            val buffer = allocArray<ByteVar>(bytes.size)
+            bytes.forEachIndexed { index, byte ->
+                buffer[index] = byte
+            }
+            val midiHdr = alloc<MIDIHDR>()
+            midiHdr.lpData = buffer
+            midiHdr.dwBufferLength = bytes.size.toUInt()
+            midiHdr.dwBytesRecorded = bytes.size.toUInt()
+
+            var retVal = WindowsMidiApi.midiOutPrepareHeader!!(outputDevice.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+            retVal = WindowsMidiApi.midiOutLongMsg!!(outputDevice.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+            retVal = WindowsMidiApi.midiOutUnprepareHeader!!(outputDevice.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+        }
     }
 
     override fun clock() {
-        // TODO
+        val retVal = WindowsMidiApi.midiOutShortMsg!!(outputDevice.value!!, byteArrayOf(0xF8.toByte(), 0x00, 0x00, 0x00).toIntLE().toUInt())
+        WindowsMidiApi.throwIfError(retVal)
     }
 
     override fun setMessageListener(messageListener: (ByteArray) -> Unit) {

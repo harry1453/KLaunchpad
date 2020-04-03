@@ -2,6 +2,7 @@ package com.harry1453.klaunchpad.impl
 
 import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.impl.util.colorDelta
+import kotlin.native.concurrent.SharedImmutable
 
 private fun hexStringToColor(hexString: String): Color {
     val r = hexString.substring(0..1).toUByte(radix = 16)
@@ -10,6 +11,7 @@ private fun hexStringToColor(hexString: String): Color {
     return Color(r, g, b)
 }
 
+@SharedImmutable
 internal val VELOCITY_TO_COLOR: Array<Color> = Array(128) { Color.BLACK }.apply {
     this[0] = hexStringToColor("000000")
     this[1] = hexStringToColor("1c1c1c")
