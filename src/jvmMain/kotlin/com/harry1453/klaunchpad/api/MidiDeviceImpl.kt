@@ -3,7 +3,7 @@ package com.harry1453.klaunchpad.api
 import javax.sound.midi.*
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 
-actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+internal actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
     // TODO take advantage of parallelism
     val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().mapIndexed { index, device ->
         Pair(device, MidiDeviceInfo(device.name, device.version, index))

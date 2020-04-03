@@ -4,7 +4,7 @@ import kotlinx.cinterop.*
 import platform.windows.*
 
 @Suppress("UNCHECKED_CAST", "MemberVisibilityCanBePrivate")
-object WindowsMidiApi {
+internal object WindowsMidiApi {
     val midiConnect: CPointer<CFunction<(hmi: HMIDI, hmo: HMIDIOUT, pReserved: LPVOID) -> MMRESULT>>?
     val midiDisconnect: CPointer<CFunction<(hmi: HMIDI, hmo: HMIDIOUT, pReserved: LPVOID) -> MMRESULT>>?
     val midiInAddBuffer: CPointer<CFunction<(hmi: HMIDIIN, pmg: LPMIDIHDR, cbmh: UINT) -> MMRESULT>>?

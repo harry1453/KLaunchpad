@@ -10,7 +10,7 @@ import org.khronos.webgl.get
 import toMap
 import kotlin.browser.window
 
-actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+internal actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
     val midiAccess = window.navigator.requestMIDIAccess(midiOptions(sysex = true)).await()
 
     var index = 0

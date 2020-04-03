@@ -24,4 +24,4 @@ interface MidiDevice : Closable {
  *
  * [deviceFilter] may be called on any thread.
  */
-expect suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice
+internal expect suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice

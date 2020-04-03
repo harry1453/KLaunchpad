@@ -3,7 +3,7 @@ package com.harry1453.klaunchpad.api
 import kotlinx.cinterop.*
 import platform.windows.*
 
-actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
+internal actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
     val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!().toInt()
     val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!().toInt()
 
