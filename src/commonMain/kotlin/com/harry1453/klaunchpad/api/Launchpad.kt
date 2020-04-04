@@ -2,9 +2,6 @@ package com.harry1453.klaunchpad.api
 
 import com.harry1453.klaunchpad.impl.launchpads.mk2.LaunchpadMk2
 import com.harry1453.klaunchpad.impl.launchpads.pro.LaunchpadPro
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 
 /**
  * A Launchpad is a grid of [Pad]s, which are comprised of an LED and a Button.
@@ -244,27 +241,27 @@ interface Launchpad : Closable {
 
     companion object {
         /**
-         * Asynchronously connect to a Launchpad MK2.
-         * @throws Exception if we could not connect to a Launchpad MK2
-         * TODO support for multiple devices connected
+         * Open a Launchpad MK2 instance that uses [inputDevice] and [outputDevice].
+         *
+         * Essentially, start using a Launchpad MK2 that is connected on these MIDI Devices.
+         * The Launchpad instance will close [inputDevice] and [outputDevice] when you close it,
+         * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
          */
-        fun connectToLaunchpadMK2Async(): Deferred<Launchpad> {
-            return GlobalScope.async {
-                val midiDevice = openMidiDeviceAsync { it.name.toLowerCase().contains("Launchpad MK2".toLowerCase()) }
-                LaunchpadMk2(midiDevice, false)
-            }
+        fun connectToLaunchpadMK2(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
+            return LaunchpadMk2(MidiDeviceWrapper(inputDevice, outputDevice), false)
         }
 
         /**
-         * Asynchronously connect to a Launchpad Pro. WARNING: THIS IS COMPLETELY UNTESTED AS I DO NOT OWN A LAUNCHPAD PRO
-         * @throws Exception if we could not connect to a Launchpad Pro
-         * TODO support for multiple devices connected
+         * Open a Launchpad Pro instance that uses [inputDevice] and [outputDevice].
+         *
+         * **WARNING: THIS IS UNTESTED AS I DO NOT OWN A LAUNCHPAD PRO.**
+         *
+         * Essentially, start using a Launchpad Pro that is connected on these MIDI Devices.
+         * The Launchpad instance will close [inputDevice] and [outputDevice] when you close it,
+         * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
          */
-        fun connectToLaunchpadProAsync(): Deferred<Launchpad> {
-            return GlobalScope.async {
-                val midiDevice = openMidiDeviceAsync { it.name.toLowerCase().contains("Launchpad Pro".toLowerCase()) }
-                LaunchpadPro(midiDevice)
-            }
+        fun connectToLaunchpadPro(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
+            return LaunchpadPro(MidiDeviceWrapper(inputDevice, outputDevice))
         }
     }
 }
