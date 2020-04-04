@@ -3,62 +3,80 @@ package com.harry1453.klaunchpad.api
 import kotlinx.cinterop.*
 import platform.windows.*
 
-internal actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!().toInt()
-    val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!().toInt()
+class Holder<T> {
+    var value: T? = null
+}
 
-    var inputDeviceID: UInt? = null
-    for (i in 0 until inputDeviceCount) {
-        if (inputDeviceID != null) break
-        memScoped {
+private data class MidiInputDeviceInfo(
+    override val name: String,
+    override val version: String,
+    internal val deviceID: UInt
+) : MidiDeviceInfo
+
+actual suspend fun listMidiInputDevicesAsync(): List<MidiDeviceInfo> {
+    val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!()
+    val list = mutableListOf<MidiDeviceInfo>()
+    memScoped { // TODO memScoped needs a contract!
+        for (i in 0u until inputDeviceCount) {
             val capabilities = alloc<MIDIINCAPS>()
             val retVal = WindowsMidiApi.midiInGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
             WindowsMidiApi.throwIfError(retVal)
-            if (deviceFilter(MidiDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i))) {
-                inputDeviceID = i.toUInt()
-                // TODO we can't break because memScoped does not have a contract...
-            }
+            list.add(MidiInputDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i)) // TODO proper version conversion
         }
     }
-    if (inputDeviceID == null) error("Could not find input device")
+    return list
+}
 
-    var outputDeviceID: UInt? = null
-    for (i in 0 until outputDeviceCount) {
-        if (outputDeviceID != null) break
-        memScoped {
-            val capabilities = alloc<MIDIOUTCAPS>()
-            val retVal = WindowsMidiApi.midiOutGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIOUTCAPS>().toUInt())
-            WindowsMidiApi.throwIfError(retVal)
-            if (deviceFilter(MidiDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i + inputDeviceCount))) {
-                outputDeviceID = i.toUInt()
-                // TODO we can't break because memScoped does not have a contract...
-            }
-        }
-    }
-    if (outputDeviceID == null) error("Could not find output device")
+actual suspend fun openMidiInputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiInputDevice {
+    require(deviceInfo is MidiInputDeviceInfo)
 
-    val outputDevice = nativeHeap.alloc<HMIDIOUTVar>()
-    var retVal = WindowsMidiApi.midiOutOpen!!(outputDevice.ptr, outputDeviceID!!, 0u, 0u, CALLBACK_NULL.toUInt())
-    WindowsMidiApi.throwIfError(retVal)
-
-    val midiDeviceHolder = Holder<MidiDeviceImpl>()
+    val midiDeviceHolder = Holder<MidiInputDeviceImpl>()
     val midiDeviceHolderRef = StableRef.create(midiDeviceHolder)
 
-    val inputDevice = nativeHeap.alloc<HMIDIINVar>()
-    retVal = WindowsMidiApi.midiInOpen!!(inputDevice.ptr, inputDeviceID!!, staticCFunction(::midiInCallback).rawValue.toLong().toULong(), midiDeviceHolderRef.asCPointer().rawValue.toLong().toULong(), CALLBACK_FUNCTION.toUInt())
+    val device = nativeHeap.alloc<HMIDIINVar>()
+    var retVal = WindowsMidiApi.midiInOpen!!(device.ptr, deviceInfo.deviceID, staticCFunction(::midiInCallback).rawValue.toLong().toULong(), midiDeviceHolderRef.asCPointer().rawValue.toLong().toULong(), CALLBACK_FUNCTION.toUInt())
     WindowsMidiApi.throwIfError(retVal)
-    retVal = WindowsMidiApi.midiInStart!!(inputDevice.value!!)
+    retVal = WindowsMidiApi.midiInStart!!(device.value!!)
     WindowsMidiApi.throwIfError(retVal)
 
-    val midiDevice = MidiDeviceImpl(inputDevice, outputDevice, midiDeviceHolderRef)
+    val midiDevice = MidiInputDeviceImpl(device, midiDeviceHolderRef)
     midiDeviceHolder.value = midiDevice
     return midiDevice
+}
+
+private data class MidiOutputDeviceInfo(
+    override val name: String,
+    override val version: String,
+    internal val deviceID: UInt
+) : MidiDeviceInfo
+
+actual suspend fun listMidiOutputDevicesAsync(): List<MidiDeviceInfo> {
+    val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!()
+    val list = mutableListOf<MidiDeviceInfo>()
+    memScoped { // TODO memScoped needs a contract!
+        for (i in 0u until outputDeviceCount) {
+            val capabilities = alloc<MIDIOUTCAPS>()
+            val retVal = WindowsMidiApi.midiOutGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+            list.add(MidiOutputDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i)) // TODO proper version conversion
+        }
+    }
+    return list
+}
+
+actual suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiOutputDevice {
+    require(deviceInfo is MidiOutputDeviceInfo)
+
+    val device = nativeHeap.alloc<HMIDIOUTVar>()
+    val retVal = WindowsMidiApi.midiOutOpen!!(device.ptr, deviceInfo.deviceID, 0u, 0u, CALLBACK_NULL.toUInt())
+    WindowsMidiApi.throwIfError(retVal)
+    return MidiOutputDeviceImpl(device)
 }
 
 @Suppress("UNUSED_PARAMETER")
 fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: DWORD_PTR, dwParam1: DWORD_PTR, dwParam2: DWORD_PTR) {
     initRuntimeIfNeeded()
-    val midiDeviceHolder = dwInstance.toLong().toCPointer<CPointed>()!!.asStableRef<Holder<MidiDeviceImpl>>().get()
+    val midiDeviceHolder = dwInstance.toLong().toCPointer<CPointed>()!!.asStableRef<Holder<MidiInputDeviceImpl>>().get()
     if (midiDeviceHolder.value == null) return
     when(wMsg.toInt()) {
         MIM_DATA -> {
@@ -76,69 +94,60 @@ fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: DWORD_PTR, dwParam1: DW
     }
 }
 
-class MidiDeviceImpl(private val inputDevice: HMIDIINVar, private val outputDevice: HMIDIOUTVar, private val midiDeviceHolderRef: StableRef<Holder<MidiDeviceImpl>>) : MidiDevice {
+private class MidiInputDeviceImpl(private val device: HMIDIINVar, private val midiDeviceHolderRef: StableRef<Holder<MidiInputDeviceImpl>>) : MidiInputDevice {
     override var isClosed: Boolean = false
 
-    var messageListener: ((ByteArray) -> Unit)? = null
+    internal var messageListener: ((ByteArray) -> Unit)? = null
 
-    override fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MidiDevice.MessageType) {
-        val firstByte = (when(messageType) {
-            MidiDevice.MessageType.NoteOff -> 0x80
-            MidiDevice.MessageType.NoteOn -> 0x90
-            MidiDevice.MessageType.ControlChange -> 0xB0
-        } or (channel and 0xF)).toByte()
-        val data = byteArrayOf(firstByte, data1.toByte(), data2.toByte(), 0x00)
-        val retVal = WindowsMidiApi.midiOutShortMsg!!(outputDevice.value!!, data.toIntLE().toUInt())
-        WindowsMidiApi.throwIfError(retVal)
-    }
-
-    override fun sendSysEx(bytes: ByteArray) {
-        memScoped {
-            val buffer = allocArray<ByteVar>(bytes.size)
-            bytes.forEachIndexed { index, byte ->
-                buffer[index] = byte
-            }
-            val midiHdr = alloc<MIDIHDR>()
-            midiHdr.lpData = buffer
-            midiHdr.dwBufferLength = bytes.size.toUInt()
-            midiHdr.dwBytesRecorded = bytes.size.toUInt()
-
-            var retVal = WindowsMidiApi.midiOutPrepareHeader!!(outputDevice.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
-            WindowsMidiApi.throwIfError(retVal)
-            retVal = WindowsMidiApi.midiOutLongMsg!!(outputDevice.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
-            WindowsMidiApi.throwIfError(retVal)
-            retVal = WindowsMidiApi.midiOutUnprepareHeader!!(outputDevice.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
-            WindowsMidiApi.throwIfError(retVal)
-        }
-    }
-
-    override fun clock() {
-        val retVal = WindowsMidiApi.midiOutShortMsg!!(outputDevice.value!!, byteArrayOf(0xF8.toByte(), 0x00, 0x00, 0x00).toIntLE().toUInt())
-        WindowsMidiApi.throwIfError(retVal)
-    }
-
-    override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
+    override fun setMessageListener(messageListener: (message: ByteArray) -> Unit) {
         this.messageListener = messageListener
     }
 
     override fun close() {
-        var retVal = WindowsMidiApi.midiInStop!!(inputDevice.value!!)
+        var retVal = WindowsMidiApi.midiInStop!!(device.value!!)
         WindowsMidiApi.throwIfError(retVal)
-
-        retVal = WindowsMidiApi.midiInClose!!(inputDevice.value!!)
+        retVal = WindowsMidiApi.midiInClose!!(device.value!!)
         WindowsMidiApi.throwIfError(retVal)
-        retVal = WindowsMidiApi.midiOutClose!!(outputDevice.value!!)
-        WindowsMidiApi.throwIfError(retVal)
-
         midiDeviceHolderRef.dispose()
-
-        nativeHeap.free(inputDevice)
-        nativeHeap.free(outputDevice)
-
+        nativeHeap.free(device)
         isClosed = true
     }
 }
 
-class Holder<T> {
-    var value: T? = null
+private class MidiOutputDeviceImpl(private val device: HMIDIOUTVar) : MidiOutputDevice {
+    override var isClosed: Boolean = false
+
+    override fun sendMessage(message: ByteArray) {
+        if (message.size <= 3) {
+            val buffer = ByteArray(4)
+            message.copyInto(buffer)
+            val retVal = WindowsMidiApi.midiOutShortMsg!!(device.value!!, message.toIntLE().toUInt())
+            WindowsMidiApi.throwIfError(retVal)
+        } else {
+            memScoped {
+                val buffer = allocArray<ByteVar>(message.size)
+                message.forEachIndexed { index, byte ->
+                    buffer[index] = byte
+                }
+                val midiHdr = alloc<MIDIHDR>()
+                midiHdr.lpData = buffer
+                midiHdr.dwBufferLength = message.size.toUInt()
+                midiHdr.dwBytesRecorded = message.size.toUInt()
+
+                var retVal = WindowsMidiApi.midiOutPrepareHeader!!(device.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
+                WindowsMidiApi.throwIfError(retVal)
+                retVal = WindowsMidiApi.midiOutLongMsg!!(device.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
+                WindowsMidiApi.throwIfError(retVal)
+                retVal = WindowsMidiApi.midiOutUnprepareHeader!!(device.value!!, midiHdr.ptr, sizeOf<MIDIHDR>().toUInt())
+                WindowsMidiApi.throwIfError(retVal)
+            }
+        }
+    }
+
+    override fun close() {
+        val retVal = WindowsMidiApi.midiOutClose!!(device.value!!)
+        WindowsMidiApi.throwIfError(retVal)
+        nativeHeap.free(device)
+        isClosed = true
+    }
 }
