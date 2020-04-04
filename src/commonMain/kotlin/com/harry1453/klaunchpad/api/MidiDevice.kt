@@ -1,6 +1,11 @@
 package com.harry1453.klaunchpad.api
 
-interface MidiDeviceInfo {
+interface MidiInputDeviceInfo {
+    val name: String
+    val version: String
+}
+
+interface MidiOutputDeviceInfo {
     val name: String
     val version: String
 }
@@ -63,19 +68,19 @@ interface MidiOutputDevice: Closable {
 /**
  * Get a list of currently connected MIDI output devices
  */
-expect suspend fun listMidiInputDevicesAsync(): List<MidiDeviceInfo>
+expect suspend fun listMidiInputDevicesAsync(): List<MidiInputDeviceInfo>
 
 /**
  * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevicesAsync]
  */
-expect suspend fun openMidiInputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiInputDevice
+expect suspend fun openMidiInputDeviceAsync(deviceInfo: MidiInputDeviceInfo): MidiInputDevice
 
 /**
  * Get a list of currently connected MIDI output devices
  */
-expect suspend fun listMidiOutputDevicesAsync(): List<MidiDeviceInfo>
+expect suspend fun listMidiOutputDevicesAsync(): List<MidiOutputDeviceInfo>
 
 /**
  * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevicesAsync]
  */
-expect suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiOutputDevice
+expect suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice

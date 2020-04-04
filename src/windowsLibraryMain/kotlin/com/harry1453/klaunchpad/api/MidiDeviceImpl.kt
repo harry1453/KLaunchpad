@@ -7,28 +7,28 @@ class Holder<T> {
     var value: T? = null
 }
 
-private data class MidiInputDeviceInfo(
+private data class MidiInputDeviceInfoImpl(
     override val name: String,
     override val version: String,
     internal val deviceID: UInt
-) : MidiDeviceInfo
+) : MidiInputDeviceInfo
 
-actual suspend fun listMidiInputDevicesAsync(): List<MidiDeviceInfo> {
+actual suspend fun listMidiInputDevicesAsync(): List<MidiInputDeviceInfo> {
     val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!()
-    val list = mutableListOf<MidiDeviceInfo>()
+    val list = mutableListOf<MidiInputDeviceInfo>()
     memScoped { // TODO memScoped needs a contract!
         for (i in 0u until inputDeviceCount) {
             val capabilities = alloc<MIDIINCAPS>()
             val retVal = WindowsMidiApi.midiInGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
             WindowsMidiApi.throwIfError(retVal)
-            list.add(MidiInputDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i)) // TODO proper version conversion
+            list.add(MidiInputDeviceInfoImpl(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i)) // TODO proper version conversion
         }
     }
     return list
 }
 
-actual suspend fun openMidiInputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiInputDevice {
-    require(deviceInfo is MidiInputDeviceInfo)
+actual suspend fun openMidiInputDeviceAsync(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
+    require(deviceInfo is MidiInputDeviceInfoImpl)
 
     val midiDeviceHolder = Holder<MidiInputDeviceImpl>()
     val midiDeviceHolderRef = StableRef.create(midiDeviceHolder)
@@ -44,28 +44,28 @@ actual suspend fun openMidiInputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiInp
     return midiDevice
 }
 
-private data class MidiOutputDeviceInfo(
+private data class MidiOutputDeviceInfoImpl(
     override val name: String,
     override val version: String,
     internal val deviceID: UInt
-) : MidiDeviceInfo
+) : MidiOutputDeviceInfo
 
-actual suspend fun listMidiOutputDevicesAsync(): List<MidiDeviceInfo> {
+actual suspend fun listMidiOutputDevicesAsync(): List<MidiOutputDeviceInfo> {
     val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!()
-    val list = mutableListOf<MidiDeviceInfo>()
+    val list = mutableListOf<MidiOutputDeviceInfo>()
     memScoped { // TODO memScoped needs a contract!
         for (i in 0u until outputDeviceCount) {
             val capabilities = alloc<MIDIOUTCAPS>()
             val retVal = WindowsMidiApi.midiOutGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
             WindowsMidiApi.throwIfError(retVal)
-            list.add(MidiOutputDeviceInfo(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i)) // TODO proper version conversion
+            list.add(MidiOutputDeviceInfoImpl(capabilities.szPname.toKString(), capabilities.vDriverVersion.toString(16), i)) // TODO proper version conversion
         }
     }
     return list
 }
 
-actual suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiDeviceInfo): MidiOutputDevice {
-    require(deviceInfo is MidiOutputDeviceInfo)
+actual suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
+    require(deviceInfo is MidiOutputDeviceInfoImpl)
 
     val device = nativeHeap.alloc<HMIDIOUTVar>()
     val retVal = WindowsMidiApi.midiOutOpen!!(device.ptr, deviceInfo.deviceID, 0u, 0u, CALLBACK_NULL.toUInt())
