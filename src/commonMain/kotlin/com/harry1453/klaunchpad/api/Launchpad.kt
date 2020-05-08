@@ -2,6 +2,7 @@ package com.harry1453.klaunchpad.api
 
 import com.harry1453.klaunchpad.impl.launchpads.mk2.LaunchpadMk2
 import com.harry1453.klaunchpad.impl.launchpads.pro.LaunchpadPro
+import kotlin.jvm.JvmStatic
 
 /**
  * A Launchpad is a grid of [Pad]s, which are comprised of an LED and a Button.
@@ -205,7 +206,7 @@ interface Launchpad : Closable {
      * Once the fader view has been setup, the listener set using [setFaderUpdateListener], will be notified of any changes to the fader values, and you
      * can update the fader values using [updateFader]. If the launchpad user updates the fader, the Launchpad handles the lighting change.
      *
-     * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader colour and an initial value (0-127) as the value.
+     * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader color and an initial value (0-127) as the value.
      */
     fun setupFaderView(faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false)
 
@@ -247,6 +248,7 @@ interface Launchpad : Closable {
          * The Launchpad instance will close [inputDevice] and [outputDevice] when you close it,
          * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
          */
+        @JvmStatic
         fun connectToLaunchpadMK2(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
             return LaunchpadMk2(MidiDeviceWrapper(inputDevice, outputDevice), false)
         }
@@ -260,8 +262,29 @@ interface Launchpad : Closable {
          * The Launchpad instance will close [inputDevice] and [outputDevice] when you close it,
          * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
          */
+        @JvmStatic
         fun connectToLaunchpadPro(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
             return LaunchpadPro(MidiDeviceWrapper(inputDevice, outputDevice))
         }
+
+        /**
+         * Get a list of currently connected MIDI output devices
+         */
+        suspend fun listMidiInputDevices(): List<MidiInputDeviceInfo> = listMidiInputDevicesImpl()
+
+        /**
+         * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevices]
+         */
+        suspend fun openMidiInputDevice(deviceInfo: MidiInputDeviceInfo): MidiInputDevice = openMidiInputDeviceImpl(deviceInfo)
+
+        /**
+         * Get a list of currently connected MIDI output devices
+         */
+        suspend fun listMidiOutputDevices(): List<MidiOutputDeviceInfo> = listMidiOutputDevicesImpl()
+
+        /**
+         * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevices]
+         */
+        suspend fun openMidiOutputDevice(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice = openMidiOutputDeviceImpl(deviceInfo)
     }
 }

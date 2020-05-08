@@ -23,10 +23,17 @@ internal inline fun <T> externalFunction(block: () -> T): T {
  */
 internal inline fun <T> externalFunctionWithLaunchpad(launchpadPtr: COpaquePointer, block: (Launchpad) -> T): T {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    initRuntimeIfNeeded()
-    if (launchpadPtr.rawValue.toLong() == 0L) throw NullPointerException()
-    val launchpad = launchpadPtr.asStableRef<Launchpad>().get()
-    return block(launchpad)
+    return externalFunction {
+        block(launchpadPtr.toObject())
+    }
+}
+
+/**
+ * Convert an opaque pointer into [T]
+ */
+internal inline fun <reified T: Any> COpaquePointer.toObject(): T {
+    if (this.rawValue.toLong() == 0L) throw NullPointerException()
+    return this.asStableRef<T>().get()
 }
 
 /**

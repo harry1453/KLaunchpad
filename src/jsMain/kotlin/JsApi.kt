@@ -1,15 +1,87 @@
 import com.harry1453.klaunchpad.api.Launchpad
 import jsExternal.JsMap
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asPromise
+import kotlinx.coroutines.async
 import kotlin.js.Promise
 
+/**
+ * Open a Launchpad MK2 instance that uses [inputDevice] and [outputDevice].
+ *
+ * Essentially, start using a Launchpad MK2 that is connected on these MIDI Devices.
+ * The Launchpad instance will close [inputDevice] and [outputDevice] when you close it,
+ * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
+ */
+@JsExport
 @JsName("connectToLaunchpadMK2")
-fun connectToLaunchpadMK2(): Promise<JsLaunchpad> = Launchpad.connectToLaunchpadMK2Async().asPromise()
-    .then { JsLaunchpadDelegate(it) }
+fun connectToLaunchpadMK2(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
+    require(inputDevice is JsMidiInputDeviceDelegate)
+    require(outputDevice is JsMidiOutputDeviceDelegate)
+    return JsLaunchpadDelegate(Launchpad.connectToLaunchpadMK2(inputDevice.delegate, outputDevice.delegate))
+}
 
+/**
+ * Open a Launchpad Pro instance that uses [inputDevice] and [outputDevice].
+ *
+ * **WARNING: THIS IS UNTESTED AS I DO NOT OWN A LAUNCHPAD PRO.**
+ *
+ * Essentially, start using a Launchpad Pro that is connected on these MIDI Devices.
+ * The Launchpad instance will close [inputDevice] and [outputDevice] when you close it,
+ * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
+ */
+@JsExport
 @JsName("connectToLaunchpadPro")
-fun connectToLaunchpadPro(): Promise<JsLaunchpad> = Launchpad.connectToLaunchpadProAsync().asPromise()
-    .then { JsLaunchpadDelegate(it) }
+fun connectToLaunchpadPro(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
+    require(inputDevice is JsMidiInputDeviceDelegate)
+    require(outputDevice is JsMidiOutputDeviceDelegate)
+    return JsLaunchpadDelegate(Launchpad.connectToLaunchpadPro(inputDevice.delegate, outputDevice.delegate))
+}
+
+/**
+ * Get a list of currently connected MIDI output devices
+ */
+@JsExport
+@JsName("listMidiInputDevices")
+fun listMidiInputDevices(): Promise<Array<out JsMidiInputDeviceInfo>> = GlobalScope.async {
+    Launchpad.listMidiInputDevices()
+        .map { JsMidiInputDeviceInfoDelegate(it) }
+        .toTypedArray()
+}.asPromise()
+
+/**
+ * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevices]
+ */
+@JsExport
+@JsName("openMidiInputDevice")
+fun openMidiInputDevice(deviceInfo: JsMidiInputDeviceInfo): Promise<JsMidiInputDevice> {
+    require(deviceInfo is JsMidiInputDeviceInfoDelegate)
+    return GlobalScope.async {
+        JsMidiInputDeviceDelegate(Launchpad.openMidiInputDevice(deviceInfo.delegate))
+    }.asPromise()
+}
+
+/**
+ * Get a list of currently connected MIDI output devices
+ */
+@JsExport
+@JsName("listMidiOutputDevices")
+fun listMidiOutputDevices(): Promise<Array<out JsMidiOutputDeviceInfo>> = GlobalScope.async {
+    Launchpad.listMidiOutputDevices()
+        .map { JsMidiOutputDeviceInfoDelegate(it) }
+        .toTypedArray()
+}.asPromise()
+
+/**
+ * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevices]
+ */
+@JsExport
+@JsName("openMidiOutputDevice")
+fun openMidiOutputDevice(deviceInfo: JsMidiOutputDeviceInfo): Promise<JsMidiOutputDevice> {
+    require(deviceInfo is JsMidiOutputDeviceInfoDelegate)
+    return GlobalScope.async {
+        JsMidiOutputDeviceDelegate(Launchpad.openMidiOutputDevice(deviceInfo.delegate))
+    }.asPromise()
+}
 
 @JsName("Launchpad")
 interface JsLaunchpad {
@@ -224,7 +296,7 @@ interface JsLaunchpad {
      * Once the fader view has been setup, the listener set using [setFaderUpdateListener], will be notified of any changes to the fader values, and you
      * can update the fader values using [updateFader]. If the launchpad user updates the fader, the Launchpad handles the lighting change.
      *
-     * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader colour and an initial value (0-127) as the value.
+     * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader color and an initial value (0-127) as the value.
      */
     @JsName("setupFaderView")
     fun setupFaderView(faders: JsMap<Int, FaderSettings>, bipolar: Boolean = false)
@@ -257,6 +329,24 @@ interface JsLaunchpad {
     fun close()
 }
 
+@JsName("MidiInputDevice")
+interface JsMidiInputDevice
+
+@JsName("MidiOutputDevice")
+interface JsMidiOutputDevice
+
+@JsName("MidiInputDeviceInfo")
+interface JsMidiInputDeviceInfo {
+    val name: String
+    val version: String
+}
+
+@JsName("MidiOutputDeviceInfo")
+interface JsMidiOutputDeviceInfo {
+    val name: String
+    val version: String
+}
+
 @JsName("Pad")
 interface JsPad {
     @JsName("gridX")
@@ -266,11 +356,13 @@ interface JsPad {
 }
 
 /**
- * Create a new JsColor
+ * Create a new Color
  */
+@JsExport
 @JsName("color")
 fun color(r: Int, g: Int, b: Int): JsColor = JsColorDelegate(r, g, b)
 
+@JsExport
 @JsName("BLACK")
 val BLACK = color(0, 0, 0)
 
@@ -284,6 +376,7 @@ interface JsColor {
     val b: Int
 }
 
+@JsExport
 @JsName("faderSettings")
 fun faderSettings(color: JsColor, initialValue: Int): FaderSettings {
     return FaderSettings(color, initialValue)

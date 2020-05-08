@@ -1,88 +1,102 @@
 package com.harry1453.klaunchpad.api
 
-import javax.sound.midi.*
+import javax.sound.midi.MidiMessage
+import javax.sound.midi.MidiSystem
+import javax.sound.midi.MidiUnavailableException
+import javax.sound.midi.Receiver
 import javax.sound.midi.MidiDevice as JvmMidiDevice
 
-internal actual suspend inline fun openMidiDeviceAsync(deviceFilter: (MidiDeviceInfo) -> Boolean): MidiDevice {
-    // TODO take advantage of parallelism
-    val firstDeviceInfo = MidiSystem.getMidiDeviceInfo().mapIndexed { index, device ->
-        Pair(device, MidiDeviceInfo(device.name, device.version, index))
-    }
-        .firstOrNull { deviceFilter(it.second) }?.first ?: error("Could not find first device")
-    val secondDeviceInfo = MidiSystem.getMidiDeviceInfo().mapIndexed { index, device ->
-        Pair(device, MidiDeviceInfo(device.name, device.version, index))
-    }
-        .filter { deviceFilter(it.second) }.getOrNull(1)?.first ?: error("Could not find second device")
-    val firstDevice: JvmMidiDevice = MidiSystem.getMidiDevice(firstDeviceInfo)
-    val secondDevice: JvmMidiDevice = MidiSystem.getMidiDevice(secondDeviceInfo)
-    val outputDevice = when {
-        firstDevice.maxReceivers != 0 -> firstDevice
-        secondDevice.maxReceivers != 0 -> secondDevice
-        else -> error("Could not find an input device")
-    }
-    val inputDevice = when {
-        firstDevice.maxTransmitters != 0 -> firstDevice
-        secondDevice.maxTransmitters != 0 -> secondDevice
-        else -> error("Could not find an input device")
-    }
-    try {
-        firstDevice.open()
-        secondDevice.open()
-    } catch (e: MidiUnavailableException) {
-        throw IllegalStateException("Another app is using the Launchpad.")
-    }
-    return MidiDeviceImpl(inputDevice, outputDevice)
+private data class MidiInputDeviceInfoImpl(
+    override val name: String,
+    override val version: String,
+    internal val device: JvmMidiDevice
+) : MidiInputDeviceInfo
+
+actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
+    return MidiSystem.getMidiDeviceInfo()
+        .map { MidiSystem.getMidiDevice(it) }
+        .filter { it.maxTransmitters != 0 }
+        .map { MidiInputDeviceInfoImpl(it.deviceInfo.name, it.deviceInfo.version, it) }
 }
 
-class MidiDeviceImpl(private val inputDevice: JvmMidiDevice, private val outputDevice: JvmMidiDevice) : Receiver,
-    MidiDevice {
-    private val output = outputDevice.receiver
-    private val input = inputDevice.transmitter
+actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
+    require(deviceInfo is MidiInputDeviceInfoImpl)
+
+    try {
+        deviceInfo.device.open()
+    } catch (e: MidiUnavailableException) {
+        error("Another app is using the device.")
+    }
+
+    return MidiInputDeviceImpl(deviceInfo.device)
+}
+
+private data class MidiOutputDeviceInfoImpl(
+    override val name: String,
+    override val version: String,
+    internal val device: JvmMidiDevice
+) : MidiOutputDeviceInfo
+
+actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
+    return MidiSystem.getMidiDeviceInfo()
+        .map { MidiSystem.getMidiDevice(it) }
+        .filter { it.maxReceivers != 0 }
+        .map { MidiOutputDeviceInfoImpl(it.deviceInfo.name, it.deviceInfo.version, it) }
+}
+
+actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
+    require(deviceInfo is MidiOutputDeviceInfoImpl)
+
+    try {
+        deviceInfo.device.open()
+    } catch (e: MidiUnavailableException) {
+        error("Another app is using the device.")
+    }
+
+    return MidiOutputDeviceImpl(deviceInfo.device)
+}
+
+private class MidiInputDeviceImpl(private val device: JvmMidiDevice) : Receiver, MidiInputDevice {
+    override var isClosed: Boolean = false
 
     private var messageListener: ((ByteArray) -> Unit)? = null
+    private val input = device.transmitter
 
     init {
         input.receiver = this
     }
 
-    override var isClosed: Boolean = false
-
-    override fun sendMessage(channel: Int, data1: Int, data2: Int, messageType: MidiDevice.MessageType) {
-        val command = when(messageType) {
-            MidiDevice.MessageType.NoteOn -> ShortMessage.NOTE_ON
-            MidiDevice.MessageType.NoteOff -> ShortMessage.NOTE_OFF
-            MidiDevice.MessageType.ControlChange -> ShortMessage.CONTROL_CHANGE
-        }
-        output.send(ShortMessage(command, channel, data1, data2), -1)
+    override fun send(message: MidiMessage, timeStamp: Long) {
+        messageListener?.invoke(message.message)
     }
 
-    override fun sendSysEx(bytes: ByteArray) {
-        output.send(SysexMessage(bytes, bytes.size), -1)
-    }
-
-    override fun clock() {
-        output.send(ShortMessage(ShortMessage.TIMING_CLOCK), -1)
-    }
-
-    override fun setMessageListener(messageListener: (ByteArray) -> Unit) {
+    override fun setMessageListener(messageListener: (message: ByteArray) -> Unit) {
         this.messageListener = messageListener
     }
 
-    override fun send(message: MidiMessage, timeStamp: Long) {
-        try {
-            messageListener?.invoke(message.message)
-        } catch (e: Exception) {
-            e.printStackTrace()
+    override fun close() {
+        if (!isClosed) { // TODO consistent close behaviour across implementations
+            isClosed = true
+            input.close()
+            device.close()
         }
+    }
+}
+
+private class MidiOutputDeviceImpl(private val device: JvmMidiDevice) : MidiOutputDevice {
+    override var isClosed: Boolean = false
+
+    private val output = device.receiver
+
+    override fun sendMessage(message: ByteArray) {
+        output.send(ArbitraryMidiMessage(message), -1)
     }
 
     override fun close() {
-        if (!isClosed) {
+        if (!isClosed) { // TODO consistent close behaviour across implementations
             isClosed = true
-            input.close()
             output.close()
-            inputDevice.close()
-            outputDevice.close()
+            device.close()
         }
     }
 }

@@ -13,10 +13,10 @@ private data class MidiInputDeviceInfoImpl(
     internal val deviceID: UInt
 ) : MidiInputDeviceInfo
 
-actual suspend fun listMidiInputDevicesAsync(): List<MidiInputDeviceInfo> {
+actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
     val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!()
     val list = mutableListOf<MidiInputDeviceInfo>()
-    memScoped { // TODO memScoped needs a contract!
+    memScoped {
         for (i in 0u until inputDeviceCount) {
             val capabilities = alloc<MIDIINCAPS>()
             val retVal = WindowsMidiApi.midiInGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
@@ -27,7 +27,7 @@ actual suspend fun listMidiInputDevicesAsync(): List<MidiInputDeviceInfo> {
     return list
 }
 
-actual suspend fun openMidiInputDeviceAsync(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
+actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
     require(deviceInfo is MidiInputDeviceInfoImpl)
 
     val midiDeviceHolder = Holder<MidiInputDeviceImpl>()
@@ -50,10 +50,10 @@ private data class MidiOutputDeviceInfoImpl(
     internal val deviceID: UInt
 ) : MidiOutputDeviceInfo
 
-actual suspend fun listMidiOutputDevicesAsync(): List<MidiOutputDeviceInfo> {
+actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
     val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!()
     val list = mutableListOf<MidiOutputDeviceInfo>()
-    memScoped { // TODO memScoped needs a contract!
+    memScoped {
         for (i in 0u until outputDeviceCount) {
             val capabilities = alloc<MIDIOUTCAPS>()
             val retVal = WindowsMidiApi.midiOutGetDevCaps!!(i.toUInt(), capabilities.ptr, sizeOf<MIDIINCAPS>().toUInt())
@@ -64,7 +64,7 @@ actual suspend fun listMidiOutputDevicesAsync(): List<MidiOutputDeviceInfo> {
     return list
 }
 
-actual suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
+actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
     require(deviceInfo is MidiOutputDeviceInfoImpl)
 
     val device = nativeHeap.alloc<HMIDIOUTVar>()

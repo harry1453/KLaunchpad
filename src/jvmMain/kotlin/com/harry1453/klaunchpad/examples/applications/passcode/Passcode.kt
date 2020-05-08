@@ -3,12 +3,13 @@ package com.harry1453.klaunchpad.examples.applications.passcode
 import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.api.Launchpad
 import com.harry1453.klaunchpad.api.Pad
-import com.harry1453.klaunchpad.api.connectToLaunchpadMK2
+import com.harry1453.klaunchpad.api.open
 import com.harry1453.klaunchpad.impl.launchpads.mk2.LaunchpadMk2Pad
+import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 
 object Passcode {
-    val launchpad = Launchpad.connectToLaunchpadMK2()
+    private lateinit var launchpad: Launchpad
     private var state = State.LOCKED
     private val lock = Any()
 
@@ -16,7 +17,14 @@ object Passcode {
     private val enteredPasscode = CircularFifoList.new<Pad>(8)
 
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(args: Array<String>) = runBlocking {
+        val inputDeviceInfo = Launchpad.listMidiInputDevices()
+            .firstOrNull { it.name == "Launchpad MK2" } ?: error("Could not find the Launchpad's MIDI input!")
+        val outputDeviceInfo = Launchpad.listMidiOutputDevices()
+            .firstOrNull { it.name == "Launchpad MK2" } ?: error("Could not find the Launchpad's MIDI output!")
+        val launchpad = Launchpad.connectToLaunchpadMK2(inputDeviceInfo.open(), outputDeviceInfo.open())
+        Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
+
         launchpad.setPadButtonListener { pad, pressed, _ -> padPressed(pad, pressed)}
     }
 

@@ -4,13 +4,20 @@ package com.harry1453.klaunchpad.examples
 
 import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.api.Launchpad
-import com.harry1453.klaunchpad.api.connectToLaunchpadMK2
+import com.harry1453.klaunchpad.api.open
 
 // Try changing this value to observe the different modes.
 const val bipolarMode = true
 
 @Suppress("ConstantConditionIf")
-fun main() {
+suspend fun main() {
+    val inputDeviceInfo = Launchpad.listMidiInputDevices()
+        .firstOrNull { it.name == "Launchpad MK2" } ?: error("Could not find the Launchpad's MIDI input!")
+    val outputDeviceInfo = Launchpad.listMidiOutputDevices()
+        .firstOrNull { it.name == "Launchpad MK2" } ?: error("Could not find the Launchpad's MIDI output!")
+    val launchpad = Launchpad.connectToLaunchpadMK2(inputDeviceInfo.open(), outputDeviceInfo.open())
+    Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
+
     val color1 = Color(0, 0, 255)
     val color2 = Color(255, 100, 50)
     val color3 = Color(0, 50, 255)
@@ -55,9 +62,6 @@ fun main() {
     fun printFaderValues() {
         print("\rFader 1: ${faderValueToString(fader0value)}, Fader 2: ${faderValueToString(fader1value)}, Fader 3: ${faderValueToString(fader2value)}, Fader 4: ${faderValueToString(fader3value)}, Fader 5: ${faderValueToString(fader4value)}, Fader 6: ${faderValueToString(fader5value)}, Fader 7: ${faderValueToString(fader6value)}, Fader 8: ${faderValueToString(fader7value)}")
     }
-
-    val launchpad = Launchpad.connectToLaunchpadMK2()
-    Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
 
     fun exitFaderView() {
         launchpad.exitFaderView()

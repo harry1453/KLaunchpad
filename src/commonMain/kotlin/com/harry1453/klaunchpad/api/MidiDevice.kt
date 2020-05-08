@@ -5,10 +5,20 @@ interface MidiInputDeviceInfo {
     val version: String
 }
 
+/**
+ * Open this MIDI Output device.
+ */
+suspend fun MidiInputDeviceInfo.open(): MidiInputDevice = Launchpad.openMidiInputDevice(this)
+
 interface MidiOutputDeviceInfo {
     val name: String
     val version: String
 }
+
+/**
+ * Open this MIDI Output device.
+ */
+suspend fun MidiOutputDeviceInfo.open(): MidiOutputDevice = Launchpad.openMidiOutputDevice(this)
 
 @Deprecated("Use separate MidiInputDevice and MidiOutputDevice")
 internal interface MidiDevice : Closable {
@@ -65,22 +75,10 @@ interface MidiOutputDevice: Closable {
     fun sendMessage(message: ByteArray)
 }
 
-/**
- * Get a list of currently connected MIDI output devices
- */
-expect suspend fun listMidiInputDevicesAsync(): List<MidiInputDeviceInfo>
+internal expect suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo>
 
-/**
- * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevicesAsync]
- */
-expect suspend fun openMidiInputDeviceAsync(deviceInfo: MidiInputDeviceInfo): MidiInputDevice
+internal expect suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice
 
-/**
- * Get a list of currently connected MIDI output devices
- */
-expect suspend fun listMidiOutputDevicesAsync(): List<MidiOutputDeviceInfo>
+internal expect suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo>
 
-/**
- * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevicesAsync]
- */
-expect suspend fun openMidiOutputDeviceAsync(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice
+internal expect suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice

@@ -3,13 +3,14 @@ package com.harry1453.klaunchpad.examples.applications.macros
 import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.api.Launchpad
 import com.harry1453.klaunchpad.api.Pad
-import com.harry1453.klaunchpad.api.connectToLaunchpadMK2
+import com.harry1453.klaunchpad.api.open
 import com.harry1453.klaunchpad.impl.launchpads.mk2.LaunchpadMk2Pad
+import kotlinx.coroutines.runBlocking
 import java.awt.Robot
 import java.awt.event.KeyEvent
 
 object Macros {
-    private val launchpad = Launchpad.connectToLaunchpadMK2()
+    private lateinit var launchpad: Launchpad
     private val robot = Robot()
 
     // Some macros to help in IntelliJ IDEA
@@ -26,8 +27,14 @@ object Macros {
     )
 
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(args: Array<String>) = runBlocking {
+        val inputDeviceInfo = Launchpad.listMidiInputDevices()
+            .firstOrNull { it.name == "Launchpad MK2" } ?: error("Could not find the Launchpad's MIDI input!")
+        val outputDeviceInfo = Launchpad.listMidiOutputDevices()
+            .firstOrNull { it.name == "Launchpad MK2" } ?: error("Could not find the Launchpad's MIDI output!")
+        launchpad = Launchpad.connectToLaunchpadMK2(inputDeviceInfo.open(), outputDeviceInfo.open())
         Runtime.getRuntime().addShutdownHook(Thread { launchpad.close() })
+
         launchpad.autoClockEnabled = true
         launchpad.autoClockTempo = 60
         setupMacroLights()

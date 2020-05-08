@@ -1,6 +1,4 @@
-import com.harry1453.klaunchpad.api.Color
-import com.harry1453.klaunchpad.api.Launchpad
-import com.harry1453.klaunchpad.api.Pad
+import com.harry1453.klaunchpad.api.*
 import jsExternal.JsMap
 
 internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpad {
@@ -123,6 +121,24 @@ internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpa
     override fun close() {
         delegate.close()
     }
+}
+
+internal class JsMidiInputDeviceDelegate(internal val delegate: MidiInputDevice) : JsMidiInputDevice
+
+internal class JsMidiOutputDeviceDelegate(internal val delegate: MidiOutputDevice) : JsMidiOutputDevice
+
+internal class JsMidiInputDeviceInfoDelegate(internal val delegate: MidiInputDeviceInfo) : JsMidiInputDeviceInfo {
+    override val name: String
+        get() = delegate.name
+    override val version: String
+        get() = delegate.version
+}
+
+internal class JsMidiOutputDeviceInfoDelegate(internal val delegate: MidiOutputDeviceInfo) : JsMidiOutputDeviceInfo {
+    override val name: String
+        get() = delegate.name
+    override val version: String
+        get() = delegate.version
 }
 
 private class JsPadDelegate(internal val delegate: Pad) : JsPad {
