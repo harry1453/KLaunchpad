@@ -37,6 +37,14 @@ internal inline fun <reified T: Any> COpaquePointer.toObject(): T {
 }
 
 /**
+ * Dispose (free) a [COpaquePointer]
+ */
+internal inline fun <reified T: Any> COpaquePointer.dispose() {
+    if (this.rawValue.toLong() == 0L) throw NullPointerException()
+    this.asStableRef<T>().dispose()
+}
+
+/**
  * Helper function for externally facing pad member functions
  */
 internal inline fun <T> externalFunctionWithPad(padPtr: COpaquePointer, block: (Pad) -> T): T {

@@ -1,21 +1,35 @@
 package nativeApi
 
-import com.harry1453.klaunchpad.api.Color
-import com.harry1453.klaunchpad.api.Launchpad
+import com.harry1453.klaunchpad.api.*
 import kotlinx.cinterop.*
-import kotlinx.coroutines.runBlocking
+
+// "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\Hostx64\x64\lib" /def:KLaunchpad.def /out:KLaunchpad.lib
+
+// Global arena to store stuff sent to C in
+val GlobalMemScope = Arena()
+
+// Library Info
+
+@CName("KLaunchpad_version")
+fun version(): CPointer<ByteVar> = externalFunction {
+    return VERSION.cstr.getPointer(GlobalMemScope)
+}
 
 // Constructors
 
 @CName("KLaunchpad_connectToLaunchpadMK2")
-fun connectToLaunchpadMK2(): COpaquePointer = externalFunction {
-    val launchpad = runBlocking { Launchpad.connectToLaunchpadMK2(null!!, null!!) }
+fun connectToLaunchpadMK2(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaquePointer): COpaquePointer = externalFunction {
+    val inputDevice = inputDevicePtr.toObject<MidiInputDevice>()
+    val outputDevice = outputDevicePtr.toObject<MidiOutputDevice>()
+    val launchpad = Launchpad.connectToLaunchpadMK2(inputDevice, outputDevice)
     return StableRef.create(launchpad).asCPointer()
 }
 
 @CName("KLaunchpad_connectToLaunchpadPro")
-fun connectToLaunchpadPro(): COpaquePointer = externalFunction {
-    val launchpad = runBlocking { Launchpad.connectToLaunchpadPro(null!!, null!!) }
+fun connectToLaunchpadPro(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaquePointer): COpaquePointer = externalFunction {
+    val inputDevice = inputDevicePtr.toObject<MidiInputDevice>()
+    val outputDevice = outputDevicePtr.toObject<MidiOutputDevice>()
+    val launchpad = Launchpad.connectToLaunchpadPro(inputDevice, outputDevice)
     return StableRef.create(launchpad).asCPointer()
 }
 
@@ -75,25 +89,24 @@ fun pulsePadLight(launchpadPtr: COpaquePointer, padPtr: COpaquePointer, colorPtr
     launchpad.pulsePadLight(padPtr.toPad(), colorPtr.toColor())
 }
 
-//@CName("KLaunchpad_batchSetPadLights")
-//fun batchSetPadLights(launchpadPtr: COpaquePointer, padsAndColors: Map<Pad?, Color>) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-//    // TODO
-//}
-//
-//@CName("KLaunchpad_batchSetRowLights")
-//fun batchSetRowLights(launchpadPtr: COpaquePointer, padsAndColors: Map<Pad?, Color>) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-//    // TODO
-//}
-//
-//@CName("KLaunchpad_batchSetColumnLights")
-//fun batchSetColumnLights(launchpadPtr: COpaquePointer, padsAndColors: Map<Pad?, Color>) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-//    // TODO
-//}
+@CName("KLaunchpad_batchSetPadLights")
+fun batchSetPadLights(launchpadPtr: COpaquePointer, padsAndColors: Map<Pad?, Color>) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    // TODO
+}
+
+@CName("KLaunchpad_batchSetRowLights")
+fun batchSetRowLights(launchpadPtr: COpaquePointer, padsAndColors: Map<Pad?, Color>) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    // TODO
+}
+
+@CName("KLaunchpad_batchSetColumnLights")
+fun batchSetColumnLights(launchpadPtr: COpaquePointer, padsAndColors: Map<Pad?, Color>) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    // TODO
+}
 
 @CName("KLaunchpad_setAllPadLights")
 fun setAllPadLights(launchpadPtr: COpaquePointer, colorPtr: COpaquePointer) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-    val color = colorPtr.toObject<Color>()
-    launchpad.setAllPadLights(color)
+    launchpad.setAllPadLights(colorPtr.toColor())
 }
 
 @CName("KLaunchpad_clearAllPadLights")
@@ -103,8 +116,7 @@ fun clearAllPadLights(launchpadPtr: COpaquePointer) = externalFunctionWithLaunch
 
 @CName("KLaunchpad_scrollText")
 fun scrollText(launchpadPtr: COpaquePointer, text: CPointer<ByteVar>, colorPtr: COpaquePointer, loop: Boolean) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-    val color = colorPtr.toObject<Color>()
-    launchpad.scrollText(text.toKString(), color, loop)
+    launchpad.scrollText(text.toKString(), colorPtr.toColor(), loop)
 }
 
 @CName("KLaunchpad_stopScrollingText")
@@ -117,7 +129,7 @@ fun setTextScrollFinishedListener(launchpadPtr: COpaquePointer, listener: CPoint
     if (listener.rawValue.toLong() == 0L) {
         launchpad.setTextScrollFinishedListener(null)
     } else {
-        launchpad.setTextScrollFinishedListener(listener::invoke)
+        launchpad.setTextScrollFinishedListener { listener() }
     }
 }
 
@@ -132,13 +144,13 @@ fun setAutoClockEnabled(launchpadPtr: COpaquePointer, autoClockEnabled: Boolean)
 }
 
 @CName("KLaunchpad_getAutoClockTempo")
-fun getAutoClockTempo(launchpadPtr: COpaquePointer): Int = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-    return launchpad.autoClockTempo
+fun getAutoClockTempo(launchpadPtr: COpaquePointer): UInt = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    return launchpad.autoClockTempo.toUInt()
 }
 
 @CName("KLaunchpad_setAutoClockTempo")
-fun setAutoClockTempo(launchpadPtr: COpaquePointer, autoClockTempo: Int) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-    launchpad.autoClockTempo = autoClockTempo
+fun setAutoClockTempo(launchpadPtr: COpaquePointer, autoClockTempo: UInt) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    launchpad.autoClockTempo = autoClockTempo.toInt()
 }
 
 // TODO auto clock tempo range
@@ -159,18 +171,18 @@ fun getPad(launchpadPtr: COpaquePointer, x: Int, y: Int): COpaquePointer? = exte
 }
 
 @CName("KLaunchpad_getMaximumNumberOfFaders")
-fun getMaximumNumberOfFaders(launchpadPtr: COpaquePointer): Int = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-    return launchpad.maxNumberOfFaders
+fun getMaximumNumberOfFaders(launchpadPtr: COpaquePointer): UInt = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    return launchpad.maxNumberOfFaders.toUInt()
 }
 
-//@CName("KLaunchpad_setupFaderView")
-//fun setupFaderView(launchpadPtr: COpaquePointer, faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-//    // TODO
-//}
+@CName("KLaunchpad_setupFaderView")
+fun setupFaderView(launchpadPtr: COpaquePointer, faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    // TODO
+}
 
 @CName("KLaunchpad_updateFader")
-fun updateFader(launchpadPtr: COpaquePointer, faderIndex: Int, value: Byte) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
-    launchpad.updateFader(faderIndex, value)
+fun updateFader(launchpadPtr: COpaquePointer, faderIndex: UInt, value: Byte) = externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
+    launchpad.updateFader(faderIndex.toInt(), value)
 }
 
 @CName("KLaunchpad_setFaderUpdateListener")
@@ -178,7 +190,7 @@ fun setFaderUpdateListener(launchpadPtr: COpaquePointer, listener: CPointer<CFun
     if (listener.rawValue.toLong() == 0L) {
         launchpad.setFaderUpdateListener(null)
     } else {
-        launchpad.setFaderUpdateListener(listener::invoke)
+        launchpad.setFaderUpdateListener { faderIndex, faderValue ->  listener(faderIndex, faderValue) }
     }
 }
 
