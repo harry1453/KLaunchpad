@@ -36,7 +36,7 @@ kotlin {
     mingwX64("windowsLibrary") { // TODO 32-bit support
         binaries {
             sharedLib {
-                baseName = "liblaunchpad"
+                baseName = "KLaunchpad"
             }
         }
     }
