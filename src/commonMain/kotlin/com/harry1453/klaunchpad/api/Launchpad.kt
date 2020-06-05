@@ -144,7 +144,7 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setTextScrollFinishedListener(listener: (() -> Unit)?)
+    fun setTextScrollFinishedListener(listener: (() -> Unit)?) // TODO not sure if this works...
 
     /**
      * Get / Set Whether Auto Clocking is enabled.
@@ -224,7 +224,7 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?)
+    fun setFaderUpdateListener(listener: ((faderIndex: Int, newFaderValue: Byte) -> Unit)?)
 
     /**
      * Exit the fader view and return to the normal view, with full programmability.

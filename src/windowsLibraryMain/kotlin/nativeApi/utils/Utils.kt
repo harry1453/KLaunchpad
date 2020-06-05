@@ -1,4 +1,4 @@
-package nativeApi
+package nativeApi.utils
 
 import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.api.Launchpad
@@ -8,6 +8,7 @@ import kotlinx.cinterop.StableRef
 import kotlinx.cinterop.asStableRef
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import nativeApi.types.Color as NativeColor;
 
 /**
  * Helper function for externally facing non-member functions
@@ -64,11 +65,6 @@ internal fun COpaquePointer.toPad(): Pad? {
     return this.asStableRef<Pad>().get()
 }
 
-internal fun Color.toPointer(): COpaquePointer {
-    return StableRef.create(this).asCPointer() // TODO when is this freed?
-}
-
-internal fun COpaquePointer.toColor(): Color {
-    if (this.rawValue.toLong() == 0L) throw NullPointerException()
-    return this.asStableRef<Color>().get()
+internal fun NativeColor.toColor(): Color {
+    return Color(this.r, this.g, this.b)
 }

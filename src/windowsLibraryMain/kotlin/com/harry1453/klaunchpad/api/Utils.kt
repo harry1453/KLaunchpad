@@ -14,10 +14,10 @@ fun Int.toBytesLE(): ByteArray {
 /**
  * Convert a Byte Array to an LE Int
  */
-fun ByteArray.toIntLE(): Int { // TODO length 0-4, toUint
+fun ByteArray.toUintLE(): UInt { // TODO length 0-4, toUint
     val bytes = this
-    return ((bytes[0].toInt() and 0xFF)
-        or (bytes[1].toInt() and 0xFF shl 8)
-        or (bytes[2].toInt() and 0xFF shl 16)
-        or (bytes[3].toInt() and 0xFF shl 24))
+    return ((bytes[0].toUInt() and 0xFF.toUInt())
+        or (bytes[1].toUInt() and 0xFF.toUInt() shl 8)
+        or (bytes[2].toUInt() and 0xFF.toUInt() shl 16)
+        or (bytes[3].toUInt() and 0xFF.toUInt() shl 24))
 }

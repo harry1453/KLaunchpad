@@ -121,7 +121,7 @@ private class MidiOutputDeviceImpl(private val device: HMIDIOUTVar) : MidiOutput
         if (message.size <= 3) {
             val buffer = ByteArray(4)
             message.copyInto(buffer)
-            val retVal = WindowsMidiApi.midiOutShortMsg!!(device.value!!, message.toIntLE().toUInt())
+            val retVal = WindowsMidiApi.midiOutShortMsg!!(device.value!!, buffer.toUintLE())
             WindowsMidiApi.throwIfError(retVal)
         } else {
             memScoped {

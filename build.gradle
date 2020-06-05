@@ -34,6 +34,15 @@ kotlin {
         }
     }
     mingwX64("windowsLibrary") { // TODO 32-bit support
+        compilations.main {
+            cinterops {
+                NativeTypes {
+                    defFile project.file("src/windowsLibraryMain/resources/NativeTypes.def")
+
+                    packageName "nativeApi.types"
+                }
+            }
+        }
         binaries {
             sharedLib {
                 baseName = "KLaunchpad"
