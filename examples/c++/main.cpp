@@ -47,7 +47,7 @@ Launchpad connectToLaunchpad() {
     for (int i = 0; i < inputDeviceCount; i++) {
         char* name = KLaunchpad_midiInputDeviceInfo_getName(inputDevices[i]);
         char* version = KLaunchpad_midiInputDeviceInfo_getVersion(inputDevices[i]);
-        std::cout << "Device " << i << ": " << name << ", version " << version;
+        std::cout << "Device " << i+1 << ": " << name << ", version " << version;
         if (strcmp(name, "Launchpad MK2") == 0) {
             chosenInputDevice = inputDevices[i];
             std::cout << " << Choosing this one!";
@@ -64,7 +64,7 @@ Launchpad connectToLaunchpad() {
     for (int i = 0; i < outputDeviceCount; i++) {
         char* name = KLaunchpad_midiOutputDeviceInfo_getName(outputDevices[i]);
         char* version = KLaunchpad_midiOutputDeviceInfo_getVersion(outputDevices[i]);
-        std::cout << "Device " << i << ": " << name << ", version " << version;
+        std::cout << "Device " << i+1 << ": " << name << ", version " << version;
         if (strcmp(name, "Launchpad MK2") == 0) {
             chosenOutputDevice = outputDevices[i];
             std::cout << " << Choosing this one!";

@@ -18,7 +18,7 @@ interface MidiOutputDeviceInfo {
 /**
  * Open this MIDI Output device.
  */
-suspend fun MidiOutputDeviceInfo.open(): MidiOutputDevice = Launchpad.openMidiOutputDevice(this)
+suspend fun MidiOutputDeviceInfo.open(): MidiOutputDevice = Launchpad.openMidiOutputDevice(this) // TODO make this part of the interface & the main way of doing it
 
 @Deprecated("Use separate MidiInputDevice and MidiOutputDevice")
 internal interface MidiDevice : Closable {

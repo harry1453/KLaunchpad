@@ -1,4 +1,4 @@
-package com.harry1453.klaunchpad.api
+package api
 
 import kotlinx.cinterop.*
 import platform.windows.*
@@ -134,8 +134,8 @@ internal object WindowsMidiApi {
         if (mm == MMSYSERR_NOERROR.toUInt()) return null
         memScoped {
             val stringBuffer = allocArray<UShortVar>(256)
-            if (WindowsMidiApi.midiOutGetErrorText == null) return "DLL Not Loaded" // Compiler bug: The smart cast does not work if you remove explicit WindowsMidiApi TODO report!
-            val retVal = WindowsMidiApi.midiOutGetErrorText(mm, stringBuffer, 256u)
+            if (midiOutGetErrorText == null) return "DLL Not Loaded" // Compiler bug: The smart cast does not work if you remove explicit WindowsMidiApi TODO report!
+            val retVal = midiOutGetErrorText!!(mm, stringBuffer, 256u)
             if (retVal != MMSYSERR_NOERROR.toUInt()) return "Error fetching error message"
             return stringBuffer.toKString()
         }

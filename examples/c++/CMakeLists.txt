@@ -7,5 +7,5 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_executable(KLaunchpadExamples main.cpp)
 #target_link_libraries(KLaunchpadExamples KLaunchpad)
-link_directories(C:\\Users\\Harry\\Documents\\Development\\Other\\kotlin-launchpad\\examples\\c++)
+#link_directories(C:\\Users\\Harry\\Documents\\Development\\Other\\kotlin-launchpad\\examples\\c++)
 target_link_libraries(KLaunchpadExamples KLaunchpad.lib)

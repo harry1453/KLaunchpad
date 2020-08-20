@@ -1,4 +1,4 @@
-package com.harry1453.klaunchpad.api
+package api
 
 /**
  * Convert an LE Int to a Byte Array

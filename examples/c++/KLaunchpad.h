@@ -1,6 +1,12 @@
 #ifndef KLAUNCHPAD_H
 #define KLAUNCHPAD_H
 
+#ifdef __cplusplus
+#include <cstdint>
+#else
+#include <stdint.h>
+#endif
+
 typedef struct {
     uint8_t r;
     uint8_t g;

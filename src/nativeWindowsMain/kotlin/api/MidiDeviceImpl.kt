@@ -1,5 +1,9 @@
-package com.harry1453.klaunchpad.api
+package api
 
+import com.harry1453.klaunchpad.api.MidiInputDevice
+import com.harry1453.klaunchpad.api.MidiInputDeviceInfo
+import com.harry1453.klaunchpad.api.MidiOutputDevice
+import com.harry1453.klaunchpad.api.MidiOutputDeviceInfo
 import kotlinx.cinterop.*
 import platform.windows.*
 
@@ -94,7 +98,8 @@ fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: DWORD_PTR, dwParam1: DW
     }
 }
 
-private class MidiInputDeviceImpl(private val device: HMIDIINVar, private val midiDeviceHolderRef: StableRef<Holder<MidiInputDeviceImpl>>) : MidiInputDevice {
+private class MidiInputDeviceImpl(private val device: HMIDIINVar, private val midiDeviceHolderRef: StableRef<Holder<MidiInputDeviceImpl>>) :
+    MidiInputDevice {
     override var isClosed: Boolean = false
 
     internal var messageListener: ((ByteArray) -> Unit)? = null
