@@ -30,7 +30,7 @@ class App extends React.Component {
     }
 
     static randomColor() {
-        return KLaunchpad.color(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255));
+        return { r: Math.floor(Math.random() * 255), g: Math.floor(Math.random() * 255), b: Math.floor(Math.random() * 255) };
     }
 
     resetLaunchpad() {
@@ -48,8 +48,11 @@ class App extends React.Component {
 
     connect(promise) {
         promise.then(launchpad => {
+            if (launchpad == null) {
+                alert("Could not find Launchpad!");
+            } else {
                 this.setState({launchpad: launchpad, currentExample: "None, Connected to Launchpad"});
-            })
+            }})
             .catch(e => {
                 alert("Could not connect to Launchpad.");
                 console.log(e);
@@ -57,11 +60,45 @@ class App extends React.Component {
     }
 
     connectPro() {
-        this.connect(KLaunchpad.connectToLaunchpadPro());
+        this.connect(new Promise(async resolve => {
+                let inputDevice = (await KLaunchpad.listMidiInputDevices()).find(inputDevice => inputDevice.name === "Launchpad Pro");
+                if (inputDevice == null) {
+                    resolve(null);
+                    return;
+                }
+                let outputDevice = (await KLaunchpad.listMidiOutputDevices()).find(inputDevice => inputDevice.name === "Launchpad Pro");
+                if (inputDevice == null) {
+                    resolve(null);
+                    return;
+                }
+                let launchpad = await KLaunchpad.connectToLaunchpadPro(inputDevice, outputDevice);
+                resolve(launchpad);
+            }
+        ));
     }
 
     connectMK2() {
-        this.connect(KLaunchpad.connectToLaunchpadMK2());
+        this.connect(new Promise(async resolve => {
+                let inputDevice = await KLaunchpad.listMidiInputDevices()
+                    .then(deviceList => deviceList.find(device => device.name === "Launchpad MK2"))
+                    .then(device => device == null ? null : KLaunchpad.openMidiInputDevice(device));
+                if (inputDevice == null) {
+                    resolve(null);
+                    return;
+                }
+
+                let outputDevice = await KLaunchpad.listMidiOutputDevices()
+                    .then(deviceList => deviceList.find(device => device.name === "Launchpad MK2"))
+                    .then(device => device == null ? null : KLaunchpad.openMidiOutputDevice(device));
+                if (outputDevice == null) {
+                    resolve(null);
+                    return;
+                }
+
+                let launchpad = await KLaunchpad.connectToLaunchpadMK2(inputDevice, outputDevice);
+                resolve(launchpad);
+            }
+        ));
     }
 
     disconnect() {
@@ -81,9 +118,9 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: "Different Lighting Modes"});
 
-            const red = KLaunchpad.color(255, 0, 0);
-            const green = KLaunchpad.color(0, 255, 0);
-            const blue = KLaunchpad.color(0, 0, 255);
+            const red = { r: 255, g: 0, b: 0 };
+            const green = { r: 0, g: 255, b: 0 };
+            const blue = { r: 0, g: 0, b: 255 };
             this.setupAutoClock(60);
             this.state.launchpad.flashPadLightOnAndOff(this.state.launchpad.getPad(0, 0), red);
             this.state.launchpad.setPadLight(this.state.launchpad.getPad(1, 0), green);
@@ -95,8 +132,7 @@ class App extends React.Component {
         if (this.state.launchpad != null) {
             this.resetLaunchpad();
             this.state.launchpad.enterBootloader();
-            this.state.launchpad.close();
-            this.setState({launchpad: null, currentExample: "Disconnected"});
+            this.disconnect();
         }
     }
 
@@ -105,26 +141,26 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: (bipolar ? "Bipolar" : "Unipolar") + " Faders (Look in console for fader values)"});
 
-            const color1 = KLaunchpad.color(0, 0, 255);
-            const color2 = KLaunchpad.color(255, 100, 50);
-            const color3 = KLaunchpad.color(0, 50, 255);
-            const color4 = KLaunchpad.color(255, 50, 255);
-            const color5 = KLaunchpad.color(0, 255, 0);
-            const color6 = KLaunchpad.color(255, 50, 0);
-            const color7 = KLaunchpad.color(200, 200, 255);
-            const color8 = KLaunchpad.color(255, 0, 0);
-            const color9 = KLaunchpad.color(0, 255, 255);
+            const color1 = { r: 0, g: 0, b: 255 };
+            const color2 = { r: 255, g: 100, b: 50 };
+            const color3 = { r: 0, g: 50, b: 255 };
+            const color4 = { r: 255, g: 50, b: 255 };
+            const color5 = { r: 0, g: 255, b: 0 };
+            const color6 = { r: 255, g: 50, b: 0 };
+            const color7 = { r: 200, g: 200, b: 255 };
+            const color8 = { r: 255, g: 0, b: 0 };
+            const color9 = { r: 0, g: 255, b: 255 };
 
             const faders = new Map();
             const offset = bipolar ? 63 : 0;
-            faders.set(0, KLaunchpad.faderSettings(color1, 15 - offset));
-            faders.set(1, KLaunchpad.faderSettings(color2, 31 - offset));
-            faders.set(2, KLaunchpad.faderSettings(color3, 47 - offset));
-            faders.set(3, KLaunchpad.faderSettings(color4, 63 - offset));
-            faders.set(4, KLaunchpad.faderSettings(color5, 79 - offset));
-            faders.set(5, KLaunchpad.faderSettings(color6, 95 - offset));
-            faders.set(6, KLaunchpad.faderSettings(color7, 111 - offset));
-            faders.set(7, KLaunchpad.faderSettings(color8, 127 - offset));
+            faders.set(0, { color: color1, initialValue: 15 - offset });
+            faders.set(1, { color: color2, initialValue: 31 - offset });
+            faders.set(2, { color: color3, initialValue: 47 - offset });
+            faders.set(3, { color: color4, initialValue: 63 - offset });
+            faders.set(4, { color: color5, initialValue: 79 - offset });
+            faders.set(5, { color: color6, initialValue: 95 - offset });
+            faders.set(6, { color: color7, initialValue: 111 - offset });
+            faders.set(7, { color: color8, initialValue: 127 - offset });
             this.state.launchpad.setupFaderView(faders, bipolar);
 
             this.state.launchpad.setFaderUpdateListener((faderIndex, faderValue) => {
@@ -163,8 +199,8 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: "Flash Pressed Pad"});
 
-            const color1 = KLaunchpad.color(0, 0, 255);
-            const color2 = KLaunchpad.color(255, 0, 0);
+            const color1 = { r: 0, g: 0, b: 255 };
+            const color2 = { r: 255, g: 0, b: 0 };
             this.setupAutoClock(60);
             this.state.launchpad.setPadButtonListener((pad, pressed, velocity) => {
                 if (pressed) {
@@ -181,7 +217,7 @@ class App extends React.Component {
             this.resetLaunchpad();
             this.setState({currentExample: "Hello World"});
 
-            this.state.launchpad.scrollText("{s7}Hello {s3}World!", KLaunchpad.color(0, 255, 0), true)
+            this.state.launchpad.scrollText("{s7}Hello {s3}World!", { r: 0, g: 255, b: 0 }, true)
         }
     }
 
@@ -264,7 +300,9 @@ class App extends React.Component {
         return (
             <div>
                 <p>Currently Running Example: {this.state.currentExample}</p>
-                {connectButton}
+                <div>
+                    {connectButton}
+                </div>
                 <button onClick={this.example_differentLightingModes}>{"Example: Different Lighting Modes"}</button>
                 <button onClick={this.example_enterBootloader}>{"Example: Enter Bootloader (Will disconnect Launchpad!)"}</button>
                 <button onClick={this.example_fadersUnipolar}>{"Example: Unipolar Faders"}</button>
