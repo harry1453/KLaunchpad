@@ -1,4 +1,4 @@
-package api
+package com.harry1453.klaunchpad.api
 
 import kotlinx.cinterop.*
 import platform.windows.*

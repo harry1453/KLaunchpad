@@ -4,6 +4,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asPromise
 import kotlinx.coroutines.async
 import kotlin.js.Promise
+import kotlin.js.json
 
 /**
  * Open a Launchpad MK2 instance that uses [inputDevice] and [outputDevice].
@@ -15,9 +16,9 @@ import kotlin.js.Promise
 @JsExport
 @JsName("connectToLaunchpadMK2")
 fun connectToLaunchpadMK2(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
-    require(inputDevice is JsMidiInputDeviceDelegate)
-    require(outputDevice is JsMidiOutputDeviceDelegate)
-    return JsLaunchpadDelegate(Launchpad.connectToLaunchpadMK2(inputDevice.delegate, outputDevice.delegate))
+    require(inputDevice is JsMidiInputDeviceImpl)
+    require(outputDevice is JsMidiOutputDeviceImpl)
+    return JsLaunchpadImpl(Launchpad.connectToLaunchpadMK2(inputDevice.device, outputDevice.device))
 }
 
 /**
@@ -32,9 +33,9 @@ fun connectToLaunchpadMK2(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOu
 @JsExport
 @JsName("connectToLaunchpadPro")
 fun connectToLaunchpadPro(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
-    require(inputDevice is JsMidiInputDeviceDelegate)
-    require(outputDevice is JsMidiOutputDeviceDelegate)
-    return JsLaunchpadDelegate(Launchpad.connectToLaunchpadPro(inputDevice.delegate, outputDevice.delegate))
+    require(inputDevice is JsMidiInputDeviceImpl)
+    require(outputDevice is JsMidiOutputDeviceImpl)
+    return JsLaunchpadImpl(Launchpad.connectToLaunchpadPro(inputDevice.device, outputDevice.device))
 }
 
 /**
@@ -44,7 +45,7 @@ fun connectToLaunchpadPro(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOu
 @JsName("listMidiInputDevices")
 fun listMidiInputDevices(): Promise<Array<out JsMidiInputDeviceInfo>> = GlobalScope.async {
     Launchpad.listMidiInputDevices()
-        .map { JsMidiInputDeviceInfoDelegate(it) }
+        .map { JsMidiInputDeviceInfoImpl(it) }
         .toTypedArray()
 }.asPromise()
 
@@ -54,9 +55,9 @@ fun listMidiInputDevices(): Promise<Array<out JsMidiInputDeviceInfo>> = GlobalSc
 @JsExport
 @JsName("openMidiInputDevice")
 fun openMidiInputDevice(deviceInfo: JsMidiInputDeviceInfo): Promise<JsMidiInputDevice> {
-    require(deviceInfo is JsMidiInputDeviceInfoDelegate)
+    require(deviceInfo is JsMidiInputDeviceInfoImpl)
     return GlobalScope.async {
-        JsMidiInputDeviceDelegate(Launchpad.openMidiInputDevice(deviceInfo.delegate))
+        JsMidiInputDeviceImpl(Launchpad.openMidiInputDevice(deviceInfo.info))
     }.asPromise()
 }
 
@@ -67,7 +68,7 @@ fun openMidiInputDevice(deviceInfo: JsMidiInputDeviceInfo): Promise<JsMidiInputD
 @JsName("listMidiOutputDevices")
 fun listMidiOutputDevices(): Promise<Array<out JsMidiOutputDeviceInfo>> = GlobalScope.async {
     Launchpad.listMidiOutputDevices()
-        .map { JsMidiOutputDeviceInfoDelegate(it) }
+        .map { JsMidiOutputDeviceInfoImpl(it) }
         .toTypedArray()
 }.asPromise()
 
@@ -77,35 +78,33 @@ fun listMidiOutputDevices(): Promise<Array<out JsMidiOutputDeviceInfo>> = Global
 @JsExport
 @JsName("openMidiOutputDevice")
 fun openMidiOutputDevice(deviceInfo: JsMidiOutputDeviceInfo): Promise<JsMidiOutputDevice> {
-    require(deviceInfo is JsMidiOutputDeviceInfoDelegate)
+    require(deviceInfo is JsMidiOutputDeviceInfoImpl)
     return GlobalScope.async {
-        JsMidiOutputDeviceDelegate(Launchpad.openMidiOutputDevice(deviceInfo.delegate))
+        JsMidiOutputDeviceImpl(Launchpad.openMidiOutputDevice(deviceInfo.info))
     }.asPromise()
 }
 
+@JsExport
 @JsName("Launchpad")
-interface JsLaunchpad {
+external interface JsLaunchpad {
     /**
      * The number of columns in the grid.
      */
-    @JsName("gridColumnCount")
-    val gridColumnCount: Int
+    var gridColumnCount: Int
 
     /**
      * The index of the first column of the grid, as some launchpads have buttons to the left of the grid.
      * For example, the Launchpad MK2 would have a value of 0, as there are no buttons to the left of the grid.
      * However, the Launchpad Pro has a column of buttons to the left of the grid, so the value would be -1.
      *
-     * The index of the last column can be taken as ([gridColumnCount] + [gridColumnCount] - 1).
+     * The index of the last column can be taken as ([gridColumnStart] + [gridColumnCount] - 1).
      */
-    @JsName("gridColumnStart")
-    val gridColumnStart: Int
+    var gridColumnStart: Int
 
     /**
      * The number of rows in the grid.
      */
-    @JsName("gridRowCount")
-    val gridRowCount: Int
+    var gridRowCount: Int
 
     /**
      * The index of the first row of the grid, as some launchpads have buttons underneath the grid.
@@ -114,15 +113,13 @@ interface JsLaunchpad {
      *
      * The index of the last row can be taken as ([gridRowStart] + [gridRowCount] - 1).
      */
-    @JsName("gridRowStart")
-    val gridRowStart: Int
+    var gridRowStart: Int
 
     /**
      * Set a listener that will be called whenever a Pad's button state is updated.
      *
      * [listener] takes the Pad that was udpated, whether it is currently pressed, and the velocity it was pressed with, if it was pressed. The velocity is on a scale of 0-127.
      */
-    @JsName("setPadButtonListener")
     fun setPadButtonListener(listener: ((pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)?)
 
     /**
@@ -130,13 +127,11 @@ interface JsLaunchpad {
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    @JsName("setPadLight")
     fun setPadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Turn off [pad]'s LED.
      */
-    @JsName("clearPadLight")
     fun clearPadLight(pad: JsPad?)
 
     /**
@@ -144,7 +139,6 @@ interface JsLaunchpad {
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    @JsName("flashPadLight")
     fun flashPadLight(pad: JsPad?, color1: JsColor, color2: JsColor)
 
     /**
@@ -160,7 +154,6 @@ interface JsLaunchpad {
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    @JsName("pulsePadLight")
     fun pulsePadLight(pad: JsPad?, color: JsColor)
 
     /**
@@ -169,33 +162,28 @@ interface JsLaunchpad {
      *
      * Skips a pad if it is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if it does not belong to this Launchpad.
      */
-    @JsName("batchSetPadLights")
     fun batchSetPadLights(padsAndColors: JsMap<JsPad?, JsColor>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color
      * @param rowsAndColors A list of row indexes and the color that row should be set to.
      */
-    @JsName("batchSetRowLights")
     fun batchSetRowLights(rowsAndColors: JsMap<Int, JsColor>)
 
     /**
      * Bulk update columns of Pad LEDs to be all one color
      * @param columnsAndColors A list of column indexes and the color that column should be set to.
      */
-    @JsName("batchSetColumnLights")
     fun batchSetColumnLights(columnsAndColors: JsMap<Int, JsColor>)
 
     /**
      * Set all Pad LEDs to [color].
      */
-    @JsName("setAllPadLights")
     fun setAllPadLights(color: JsColor)
 
     /**
      * Turn off all Pad LEDs.
      */
-    @JsName("clearAllPadLights")
     fun clearAllPadLights()
 
     /**
@@ -210,13 +198,11 @@ interface JsLaunchpad {
      * to its previous state. If [loop] is true, it will scroll the message again and again,
      * until stopped by calling [stopScrollingText]
      */
-    @JsName("scrollText")
-    fun scrollText(message: String, color: JsColor, loop: Boolean = false)
+    fun scrollText(message: String, color: JsColor, loop: Boolean?)
 
     /**
      * Stop scrolling text across the grid and revert to the previous state.
      */
-    @JsName("stopScrollingText")
     fun stopScrollingText()
 
     /**
@@ -226,7 +212,6 @@ interface JsLaunchpad {
      *
      * [listener] may be invoked on any thread.
      */
-    @JsName("setTextScrollFinishedListener")
     fun setTextScrollFinishedListener(listener: (() -> Unit)?)
 
     /**
@@ -240,47 +225,40 @@ interface JsLaunchpad {
      *
      * Defaults to false.
      */
-    @JsName("autoClockEnabled")
-    var autoClockEnabled: Boolean
+    var autoClockEnabled: Boolean?
 
     /**
      * Get / Set the tempo used for Auto Clocking.
      * Must be in range [autoClockTempoRange].
      */
-    @JsName("autoClockTempo")
     var autoClockTempo: Int
 
     /**
      * The range of supported values for [autoClockTempo].
      */
-    @JsName("autoClockTempoRange")
-    val autoClockTempoRange: IntRange
+    var autoClockTempoRange: IntRange // TODO can't use IntRange
 
     /**
      * This can be called to manually clock the launchpad, when [autoClockEnabled] is false.
      * This needs to be called 24 times per beat to keep the Launchpad in sync.
      */
-    @JsName("clock")
     fun clock()
 
     /**
      * Force the launchpad to open its bootloader menu.
      */
-    @JsName("enterBootloader")
     fun enterBootloader()
 
     /**
      * Get the Pad at position ([x], [y]) in the grid.
      * @return The Pad, or `null` if there is no pad in that position. Remember that it is not guaranteed that every grid position contains a pad, even if it lies within the boundaries of the grid.
      */
-    @JsName("getPad")
     fun getPad(x: Int, y: Int): JsPad?
 
     /**
      * The maximum number of faders the Launchpad can display at once
      */
-    @JsName("maxNumberOfFaders")
-    val maxNumberOfFaders: Int
+    var maxNumberOfFaders: Int
 
     /**
      * Switch to the Launchpad's fader view. This turns the main grid area into a bank of up to [maxNumberOfFaders].
@@ -298,15 +276,13 @@ interface JsLaunchpad {
      *
      * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader color and an initial value (0-127) as the value.
      */
-    @JsName("setupFaderView")
-    fun setupFaderView(faders: JsMap<Int, FaderSettings>, bipolar: Boolean = false)
+    fun setupFaderView(faders: JsMap<Int, JsFaderSettings>, bipolar: Boolean?)
 
     /**
      * Update a fader's value as displayed on the launchpad whilst in fader view.
      * @param faderIndex The index of the fader to update (0 to maxNumberOfFaders-1)
      * @param value The new value of the fader (-63 to 64 if in bipolar mode, 0-127 if in unipolar mode)
      */
-    @JsName("updateFader")
     fun updateFader(faderIndex: Int, value: Byte)
 
     /**
@@ -314,13 +290,11 @@ interface JsLaunchpad {
      *
      * The launchpad may, in order to emulate a smooth fade, call this several times for one user action.
      */
-    @JsName("setFaderUpdateListener")
     fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?)
 
     /**
      * Exit the fader view and return to the normal view, with full programmability.
      */
-    @JsName("exitFaderView")
     fun exitFaderView()
 
     /**
@@ -329,61 +303,50 @@ interface JsLaunchpad {
     fun close()
 }
 
-@JsName("MidiInputDevice")
-interface JsMidiInputDevice
-
-@JsName("MidiOutputDevice")
-interface JsMidiOutputDevice
-
-@JsName("MidiInputDeviceInfo")
-interface JsMidiInputDeviceInfo {
-    val name: String
-    val version: String
-}
-
-@JsName("MidiOutputDeviceInfo")
-interface JsMidiOutputDeviceInfo {
-    val name: String
-    val version: String
-}
-
-@JsName("Pad")
-interface JsPad {
-    @JsName("gridX")
-    val gridX: Int
-    @JsName("gridY")
-    val gridY: Int
-}
-
-/**
- * Create a new Color
- */
 @JsExport
-@JsName("color")
-fun color(r: Int, g: Int, b: Int): JsColor = JsColorDelegate(r, g, b)
+@JsName("MidiInputDevice")
+external interface JsMidiInputDevice
+
+@JsExport
+@JsName("MidiOutputDevice")
+external interface JsMidiOutputDevice
+
+@JsExport
+@JsName("MidiInputDeviceInfo")
+external interface JsMidiInputDeviceInfo {
+    var name: String
+    var version: String
+}
+
+@JsExport
+@JsName("MidiOutputDeviceInfo")
+external interface JsMidiOutputDeviceInfo {
+    var name: String
+    var version: String
+}
+
+@JsExport
+@JsName("Pad")
+external interface JsPad {
+    var gridX: Int
+    var gridY: Int
+}
 
 @JsExport
 @JsName("BLACK")
-val BLACK = color(0, 0, 0)
+val BLACK = json("r" to 0, "g" to 0, "b" to 0).unsafeCast<JsColor>()
 
+@JsExport
 @JsName("Color")
-interface JsColor {
-    @JsName("r")
-    val r: Int
-    @JsName("g")
-    val g: Int
-    @JsName("b")
-    val b: Int
+external interface JsColor {
+    var r: Int
+    var g: Int
+    var b: Int
 }
 
 @JsExport
-@JsName("faderSettings")
-fun faderSettings(color: JsColor, initialValue: Int): FaderSettings {
-    return FaderSettings(color, initialValue)
-}
-
-@JsName("FaderSettingsStruct")
-data class FaderSettings(
-    var color: JsColor,
+@JsName("FaderSettings")
+external interface JsFaderSettings {
+    var color: JsColor
     var initialValue: Int
-)
+}

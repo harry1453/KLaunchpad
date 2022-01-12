@@ -1,10 +1,10 @@
 package com.harry1453.klaunchpad.api
 
 import jsExternal.*
+import kotlinx.browser.window
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 import toMap
-import kotlin.browser.window
 
 private data class MidiInputDeviceInfoImpl(
     override val name: String,

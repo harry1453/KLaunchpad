@@ -187,7 +187,8 @@ internal class LaunchpadPro(midiDevice: MidiDevice) : AbstractLaunchpad(midiDevi
     }
 
     companion object {
-        private val speedCommandRegex = Regex("\\{s([1-7])}")
+        @Suppress("RegExpRedundantEscape")
+        private val speedCommandRegex = Regex("\\{s([1-7])\\}")
 
         private val sysExHeader = "F00020290210".parseHexString()
 

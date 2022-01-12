@@ -8,7 +8,7 @@ import kotlinx.cinterop.StableRef
 import kotlinx.cinterop.asStableRef
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-import nativeApi.types.Color as NativeColor;
+import nativeApi.types.Color as NativeColor
 
 /**
  * Helper function for externally facing non-member functions
@@ -39,6 +39,7 @@ internal inline fun <reified T: Any> COpaquePointer.toObject(): T {
 
 /**
  * Dispose (free) a [COpaquePointer]
+ * TODO this is never called??
  */
 internal inline fun <reified T: Any> COpaquePointer.dispose() {
     if (this.rawValue.toLong() == 0L) throw NullPointerException()

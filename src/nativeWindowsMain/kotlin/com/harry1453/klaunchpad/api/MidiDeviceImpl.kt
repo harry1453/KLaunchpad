@@ -1,9 +1,5 @@
-package api
+package com.harry1453.klaunchpad.api
 
-import com.harry1453.klaunchpad.api.MidiInputDevice
-import com.harry1453.klaunchpad.api.MidiInputDeviceInfo
-import com.harry1453.klaunchpad.api.MidiOutputDevice
-import com.harry1453.klaunchpad.api.MidiOutputDeviceInfo
 import kotlinx.cinterop.*
 import platform.windows.*
 

@@ -175,7 +175,8 @@ internal class LaunchpadMk2(midiDevice: MidiDevice, private val userMode: Boolea
     }
 
     companion object {
-        private val speedCommandRegex = Regex("\\{s([1-7])}")
+        @Suppress("RegExpRedundantEscape")
+        private val speedCommandRegex = Regex("\\{s([1-7])\\}")
 
         private val sysExHeader = "F00020290218".parseHexString()
 

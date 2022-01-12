@@ -7,7 +7,7 @@ internal fun String.parseHexString(): ByteArray {
 }
 
 internal fun ByteArray.toHexString(): String {
-    return this.map { it.toUByte().toString(16).toUpperCase() }
+    return this.map { it.toUByte().toString(16).uppercase() }
         .map { if (it.length < 2) "0$it" else it }
         .joinToString(separator = "") { it }
 }

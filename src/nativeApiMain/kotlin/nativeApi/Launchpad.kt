@@ -4,6 +4,8 @@ import com.harry1453.klaunchpad.api.Color
 import com.harry1453.klaunchpad.api.Pad
 import kotlinx.cinterop.*
 import nativeApi.utils.externalFunctionWithLaunchpad
+import nativeApi.utils.toColor
+import nativeApi.utils.toPad
 import nativeApi.utils.toPointer
 import nativeApi.types.Color as NativeColor
 

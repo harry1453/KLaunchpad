@@ -1,7 +1,7 @@
 let launchpad = null;
 
 function randomColor() {
-    return KLaunchpad.color(Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255));
+    return { r: Math.floor(Math.random() * 255), g: Math.floor(Math.random() * 255), b: Math.floor(Math.random() * 255) };
 }
 
 function resetLaunchpad() {
@@ -21,11 +21,15 @@ function setCurrentExample(currentExample) {
 
 function connect(promise) {
     promise.then(connectedLaunchpad => {
-        launchpad = connectedLaunchpad;
-        setCurrentExample("None, Connected to Launchpad");
-        document.getElementById("connectMK2Button").style.display = 'none';
-        document.getElementById("connectProButton").style.display = 'none';
-        document.getElementById("disconnectButton").style.display = 'inline';
+        if (connectedLaunchpad == null) {
+            alert("Could not find Launchpad!");
+        } else {
+            launchpad = connectedLaunchpad;
+            setCurrentExample("None, Connected to Launchpad");
+            document.getElementById("connectMK2Button").style.display = 'none';
+            document.getElementById("connectProButton").style.display = 'none';
+            document.getElementById("disconnectButton").style.display = 'inline';
+        }
     })
         .catch(e => {
             alert("Could not connect to Launchpad.");
@@ -33,20 +37,57 @@ function connect(promise) {
         });
 }
 
+// noinspection JSUnusedGlobalSymbols
 function connectPro() {
-    connect(KLaunchpad.connectToLaunchpadPro());
+    connect(new Promise(async resolve => {
+            let inputDevice = (await KLaunchpad.listMidiInputDevices()).find(inputDevice => inputDevice.name === "Launchpad Pro");
+            if (inputDevice == null) {
+                resolve(null);
+                return;
+            }
+            let outputDevice = (await KLaunchpad.listMidiOutputDevices()).find(inputDevice => inputDevice.name === "Launchpad Pro");
+            if (inputDevice == null) {
+                resolve(null);
+                return;
+            }
+            let launchpad = await KLaunchpad.connectToLaunchpadPro(inputDevice, outputDevice);
+            resolve(launchpad);
+        }
+    ));
 }
 
+// noinspection JSUnusedGlobalSymbols
 function connectMK2() {
-    connect(KLaunchpad.connectToLaunchpadMK2());
+    connect(new Promise(async resolve => {
+            let inputDevice = await KLaunchpad.listMidiInputDevices()
+                .then(deviceList => deviceList.find(device => device.name === "Launchpad MK2"))
+                .then(device => device == null ? null : KLaunchpad.openMidiInputDevice(device));
+            if (inputDevice == null) {
+                resolve(null);
+                return;
+            }
+
+            let outputDevice = await KLaunchpad.listMidiOutputDevices()
+                .then(deviceList => deviceList.find(device => device.name === "Launchpad MK2"))
+                .then(device => device == null ? null : KLaunchpad.openMidiOutputDevice(device));
+            if (outputDevice == null) {
+                resolve(null);
+                return;
+            }
+
+            let launchpad = await KLaunchpad.connectToLaunchpadMK2(inputDevice, outputDevice);
+            resolve(launchpad);
+        }
+    ));
 }
 
 function disconnect() {
-    launchpad.close();
     setCurrentExample("Disconnected");
     document.getElementById("connectMK2Button").style.display = 'inline';
     document.getElementById("connectProButton").style.display = 'inline';
     document.getElementById("disconnectButton").style.display = 'none';
+    launchpad.close();
+    launchpad = null;
 }
 
 function setupAutoClock(bpm) {
@@ -54,14 +95,15 @@ function setupAutoClock(bpm) {
     launchpad.autoClockTempo = bpm;
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_differentLightingModes() {
     if (launchpad != null) {
         resetLaunchpad();
         setCurrentExample("Different Lighting Modes");
 
-        const red = KLaunchpad.color(255, 0, 0);
-        const green = KLaunchpad.color(0, 255, 0);
-        const blue = KLaunchpad.color(0, 0, 255);
+        const red = { r: 255, g: 0, b: 0 };
+        const green = { r: 0, g: 255, b: 0 };
+        const blue = { r: 0, g: 0, b: 255 };
         setupAutoClock(60);
         launchpad.flashPadLightOnAndOff(launchpad.getPad(0, 0), red);
         launchpad.setPadLight(launchpad.getPad(1, 0), green);
@@ -69,13 +111,12 @@ function example_differentLightingModes() {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_enterBootloader() {
     if (launchpad != null) {
         resetLaunchpad();
         launchpad.enterBootloader();
-        launchpad.close();
-        launchpad = null;
-        setCurrentExample("Disconnected");
+        disconnect();
     }
 }
 
@@ -84,26 +125,26 @@ function example_faders(bipolar) {
         resetLaunchpad();
         setCurrentExample((bipolar ? "Bipolar" : "Unipolar") + " Faders (Look in console for fader values)");
 
-        const color1 = KLaunchpad.color(0, 0, 255);
-        const color2 = KLaunchpad.color(255, 100, 50);
-        const color3 = KLaunchpad.color(0, 50, 255);
-        const color4 = KLaunchpad.color(255, 50, 255);
-        const color5 = KLaunchpad.color(0, 255, 0);
-        const color6 = KLaunchpad.color(255, 50, 0);
-        const color7 = KLaunchpad.color(200, 200, 255);
-        const color8 = KLaunchpad.color(255, 0, 0);
-        const color9 = KLaunchpad.color(0, 255, 255);
+        const color1 = { r: 0, g: 0, b: 255 };
+        const color2 = { r: 255, g: 100, b: 50 };
+        const color3 = { r: 0, g: 50, b: 255 };
+        const color4 = { r: 255, g: 50, b: 255 };
+        const color5 = { r: 0, g: 255, b: 0 };
+        const color6 = { r: 255, g: 50, b: 0 };
+        const color7 = { r: 200, g: 200, b: 255 };
+        const color8 = { r: 255, g: 0, b: 0 };
+        const color9 = { r: 0, g: 255, b: 255 };
 
         const faders = new Map();
         const offset = bipolar ? 63 : 0;
-        faders.set(0, KLaunchpad.faderSettings(color1, 15 - offset));
-        faders.set(1, KLaunchpad.faderSettings(color2, 31 - offset));
-        faders.set(2, KLaunchpad.faderSettings(color3, 47 - offset));
-        faders.set(3, KLaunchpad.faderSettings(color4, 63 - offset));
-        faders.set(4, KLaunchpad.faderSettings(color5, 79 - offset));
-        faders.set(5, KLaunchpad.faderSettings(color6, 95 - offset));
-        faders.set(6, KLaunchpad.faderSettings(color7, 111 - offset));
-        faders.set(7, KLaunchpad.faderSettings(color8, 127 - offset));
+        faders.set(0, { color: color1, initialValue: 15 - offset });
+        faders.set(1, { color: color2, initialValue: 31 - offset });
+        faders.set(2, { color: color3, initialValue: 47 - offset });
+        faders.set(3, { color: color4, initialValue: 63 - offset });
+        faders.set(4, { color: color5, initialValue: 79 - offset });
+        faders.set(5, { color: color6, initialValue: 95 - offset });
+        faders.set(6, { color: color7, initialValue: 111 - offset });
+        faders.set(7, { color: color8, initialValue: 127 - offset });
         launchpad.setupFaderView(faders, bipolar);
 
         launchpad.setFaderUpdateListener((faderIndex, faderValue) => {
@@ -129,21 +170,24 @@ function example_faders(bipolar) {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_fadersUnipolar() {
     example_faders(false);
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_fadersBipolar() {
     example_faders(true);
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_flashPressedPad() {
     if (launchpad != null) {
         resetLaunchpad();
         setCurrentExample("Flash Pressed Pad");
 
-        const color1 = KLaunchpad.color(0, 0, 255);
-        const color2 = KLaunchpad.color(255, 0, 0);
+        const color1 = { r: 0, g: 0, b: 255 };
+        const color2 = { r: 255, g: 0, b: 0 };
         setupAutoClock(60);
         launchpad.setPadButtonListener((pad, pressed, velocity) => {
             if (pressed) {
@@ -155,15 +199,17 @@ function example_flashPressedPad() {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_helloWorld() {
     if (launchpad != null) {
         resetLaunchpad();
         setCurrentExample("Hello World");
 
-        launchpad.scrollText("{s7}Hello {s3}World!", KLaunchpad.color(0, 255, 0), true)
+        launchpad.scrollText("{s7}Hello {s3}World!", { r: 0, g: 255, b: 0 }, true)
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_lightAllWhenPressed() {
     if (launchpad != null) {
         resetLaunchpad();
@@ -180,6 +226,7 @@ function example_lightAllWhenPressed() {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_lightAroundPressedPad() {
     if (launchpad != null) {
         resetLaunchpad();
@@ -202,6 +249,7 @@ function example_lightAroundPressedPad() {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_lightPressedCoordinate() {
     if (launchpad != null) {
         resetLaunchpad();
@@ -219,6 +267,7 @@ function example_lightPressedCoordinate() {
     }
 }
 
+// noinspection JSUnusedGlobalSymbols
 function example_lightPressedPad() {
     if (launchpad != null) {
         resetLaunchpad();

@@ -1,173 +1,179 @@
 import com.harry1453.klaunchpad.api.*
 import jsExternal.JsMap
 
-internal class JsLaunchpadDelegate(private val delegate: Launchpad) : JsLaunchpad {
-    override val gridColumnCount: Int
-        get() = delegate.gridColumnCount
-    override val gridColumnStart: Int
-        get() = delegate.gridColumnStart
-    override val gridRowCount: Int
-        get() = delegate.gridRowCount
-    override val gridRowStart: Int
-        get() = delegate.gridRowStart
+internal class JsLaunchpadImpl(private val launchpad: Launchpad) : JsLaunchpad {
+    override var gridColumnCount: Int
+        get() = launchpad.gridColumnCount
+        set(_) = throw UnsupportedOperationException()
+
+    override var gridColumnStart: Int
+        get() = launchpad.gridColumnStart
+        set(_) = throw UnsupportedOperationException()
+
+    override var gridRowCount: Int
+        get() = launchpad.gridRowCount
+        set(_) = throw UnsupportedOperationException()
+
+    override var gridRowStart: Int
+        get() = launchpad.gridRowStart
+        set(_) = throw UnsupportedOperationException()
 
     override fun setPadButtonListener(listener: ((pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)?) {
         if (listener == null) {
-            delegate.setPadButtonListener(null)
+            launchpad.setPadButtonListener(null)
         } else {
-            delegate.setPadButtonListener { pad, pressed, velocity -> listener(pad.toJsPad(), pressed, velocity) }
+            launchpad.setPadButtonListener { pad, pressed, velocity -> listener(pad.toJsPad(), pressed, velocity) }
         }
     }
 
     override fun setPadLight(pad: JsPad?, color: JsColor) {
-        delegate.setPadLight(pad.toPad(), color.toColor())
+        launchpad.setPadLight(pad.toPad(), color.toColor())
     }
 
     override fun clearPadLight(pad: JsPad?) {
-        delegate.clearPadLight(pad.toPad())
+        launchpad.clearPadLight(pad.toPad())
     }
 
     override fun flashPadLight(pad: JsPad?, color1: JsColor, color2: JsColor) {
-        delegate.flashPadLight(pad.toPad(), color1.toColor(), color2.toColor())
+        launchpad.flashPadLight(pad.toPad(), color1.toColor(), color2.toColor())
     }
 
     override fun flashPadLight(pad: JsPad?, color: JsColor) {
-        delegate.flashPadLight(pad.toPad(), color.toColor())
+        launchpad.flashPadLight(pad.toPad(), color.toColor())
     }
 
     override fun pulsePadLight(pad: JsPad?, color: JsColor) {
-        delegate.pulsePadLight(pad.toPad(), color.toColor())
+        launchpad.pulsePadLight(pad.toPad(), color.toColor())
     }
 
     override fun batchSetPadLights(padsAndColors: JsMap<JsPad?, JsColor>) {
-        delegate.batchSetPadLights(padsAndColors.toMap()
+        launchpad.batchSetPadLights(padsAndColors.toMap()
             .mapKeys { (jsPad, _) -> jsPad.toPad() }
             .mapValues { (_, jsColor) -> jsColor.toColor() })
     }
 
     override fun batchSetRowLights(rowsAndColors: JsMap<Int, JsColor>) {
-        delegate.batchSetRowLights(rowsAndColors.toMap()
+        launchpad.batchSetRowLights(rowsAndColors.toMap()
             .mapValues { (_, jsColor) -> jsColor.toColor() })
     }
 
     override fun batchSetColumnLights(columnsAndColors: JsMap<Int, JsColor>) {
-        delegate.batchSetColumnLights(columnsAndColors.toMap()
+        launchpad.batchSetColumnLights(columnsAndColors.toMap()
             .mapValues { (_, jsColor) -> jsColor.toColor() })
     }
 
     override fun setAllPadLights(color: JsColor) {
-        delegate.setAllPadLights(color.toColor())
+        launchpad.setAllPadLights(color.toColor())
     }
 
     override fun clearAllPadLights() {
-        delegate.clearAllPadLights()
+        launchpad.clearAllPadLights()
     }
 
-    override fun scrollText(message: String, color: JsColor, loop: Boolean) {
-        delegate.scrollText(message, color.toColor(), loop)
+    override fun scrollText(message: String, color: JsColor, loop: Boolean?) {
+        launchpad.scrollText(message, color.toColor(), loop ?: false)
     }
 
     override fun stopScrollingText() {
-        delegate.stopScrollingText()
+        launchpad.stopScrollingText()
     }
 
     override fun setTextScrollFinishedListener(listener: (() -> Unit)?) {
-        delegate.setTextScrollFinishedListener(listener)
+        launchpad.setTextScrollFinishedListener(listener)
     }
 
-    override var autoClockEnabled: Boolean
-        get() = delegate.autoClockEnabled
-        set(value) { delegate.autoClockEnabled = value }
+    override var autoClockEnabled: Boolean?
+        get() = launchpad.autoClockEnabled
+        set(value) { launchpad.autoClockEnabled = value ?: false }
+
     override var autoClockTempo: Int
-        get() = delegate.autoClockTempo
-        set(value) { delegate.autoClockTempo = value }
-    override val autoClockTempoRange: IntRange
-        get() = delegate.autoClockTempoRange
+        get() = launchpad.autoClockTempo
+        set(value) { launchpad.autoClockTempo = value }
+
+    override var autoClockTempoRange: IntRange
+        get() = launchpad.autoClockTempoRange
+        set(_) = throw UnsupportedOperationException()
 
     override fun clock() {
-        delegate.clock()
+        launchpad.clock()
     }
 
     override fun enterBootloader() {
-        delegate.enterBootloader()
+        launchpad.enterBootloader()
     }
 
     override fun getPad(x: Int, y: Int): JsPad? {
-        return delegate.getPad(x, y)?.toJsPad()
+        return launchpad.getPad(x, y)?.toJsPad()
     }
 
-    override val maxNumberOfFaders: Int
-        get() = delegate.maxNumberOfFaders
+    override var maxNumberOfFaders: Int
+        get() = launchpad.maxNumberOfFaders
+        set(_) = throw UnsupportedOperationException()
 
-    override fun setupFaderView(faders: JsMap<Int, FaderSettings>, bipolar: Boolean) {
-        delegate.setupFaderView(faders.toMap().mapValues { (_, faderSettings) ->
-            require(faderSettings.initialValue in if (bipolar) -63..64 else 0..127) { "Fader value must be in range " + (if (bipolar) "-63-64" else "0-127") + " (was ${faderSettings.initialValue})" }
+    override fun setupFaderView(faders: JsMap<Int, JsFaderSettings>, bipolar: Boolean?) {
+        launchpad.setupFaderView(faders.toMap().mapValues { (_, faderSettings) ->
+            require(faderSettings.initialValue in if (bipolar == true) -63..64 else 0..127) { "Fader value must be in range " + (if (bipolar == true) "-63-64" else "0-127") + " (was ${faderSettings.initialValue})" }
             faderSettings.color.toColor() to faderSettings.initialValue.toByte()
-        }, bipolar)
+        }, bipolar ?: false)
     }
 
     override fun updateFader(faderIndex: Int, value: Byte) {
-        delegate.updateFader(faderIndex, value)
+        launchpad.updateFader(faderIndex, value)
     }
 
     override fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?) {
-        delegate.setFaderUpdateListener(listener)
+        launchpad.setFaderUpdateListener(listener)
     }
 
     override fun exitFaderView() {
-        delegate.exitFaderView()
+        launchpad.exitFaderView()
     }
 
     override fun close() {
-        delegate.close()
+        launchpad.close()
     }
 }
 
-internal class JsMidiInputDeviceDelegate(internal val delegate: MidiInputDevice) : JsMidiInputDevice
+internal class JsMidiInputDeviceImpl(internal val device: MidiInputDevice) : JsMidiInputDevice
 
-internal class JsMidiOutputDeviceDelegate(internal val delegate: MidiOutputDevice) : JsMidiOutputDevice
+internal class JsMidiOutputDeviceImpl(internal val device: MidiOutputDevice) : JsMidiOutputDevice
 
-internal class JsMidiInputDeviceInfoDelegate(internal val delegate: MidiInputDeviceInfo) : JsMidiInputDeviceInfo {
-    override val name: String
-        get() = delegate.name
-    override val version: String
-        get() = delegate.version
+internal class JsMidiInputDeviceInfoImpl(internal val info: MidiInputDeviceInfo) : JsMidiInputDeviceInfo {
+    override var name
+        get() = info.name
+        set(_) = throw UnsupportedOperationException()
+    override var version
+        get() = info.version
+        set(_) = throw UnsupportedOperationException()
 }
 
-internal class JsMidiOutputDeviceInfoDelegate(internal val delegate: MidiOutputDeviceInfo) : JsMidiOutputDeviceInfo {
-    override val name: String
-        get() = delegate.name
-    override val version: String
-        get() = delegate.version
+internal class JsMidiOutputDeviceInfoImpl(internal val info: MidiOutputDeviceInfo) : JsMidiOutputDeviceInfo {
+    override var name
+        get() = info.name
+        set(_) = throw UnsupportedOperationException()
+    override var version
+        get() = info.version
+        set(_) = throw UnsupportedOperationException()
 }
 
-private class JsPadDelegate(internal val delegate: Pad) : JsPad {
-    override val gridX: Int
-        get() = delegate.gridX
-    override val gridY: Int
-        get() = delegate.gridY
-}
-
-internal class JsColorDelegate(internal val delegate: Color) : JsColor {
-    constructor(r: Int, g: Int, b: Int) : this(Color(r, g, b))
-    override val r: Int
-        get() = delegate.r.toInt()
-    override val g: Int
-        get() = delegate.g.toInt()
-    override val b: Int
-        get() = delegate.b.toInt()
+private class JsPadImpl(val pad: Pad) : JsPad {
+    override var gridX
+        get() = pad.gridX
+        set(_) = throw UnsupportedOperationException()
+    override var gridY
+        get() = pad.gridY
+        set(_) = throw UnsupportedOperationException()
 }
 
 private fun Pad.toJsPad(): JsPad {
-    return JsPadDelegate(this)
+    return JsPadImpl(this)
 }
 
 private fun JsPad?.toPad(): Pad? {
-    if (this !is JsPadDelegate) return null
-    return this.delegate
+    if (this !is JsPadImpl) return null
+    return this.pad
 }
 
 private fun JsColor.toColor(): Color {
-    require(this is JsColorDelegate)
-    return this.delegate
+    return Color(this.r, this.g, this.b)
 }
