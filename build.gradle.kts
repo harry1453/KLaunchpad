@@ -100,18 +100,18 @@ tasks {
         dependsOn("compileProductionLibraryKotlinJs")
         doLast {
             delete {
-                "$projectDir/build/js/packages/KLaunchpad/package.json"
+                "$projectDir/build/js/packages/klaunchpad/package.json"
             }
             copy {
                 from("$projectDir/src/jsMain/resources/package.json")
                 from("$projectDir/README.md")
-                into("$projectDir/build/js/packages/KLaunchpad/")
+                into("$projectDir/build/js/packages/klaunchpad/")
             }
             copy {
                 from("$projectDir/src/jsMain/resources/KLaunchpad.d.ts")
-                into("$projectDir/build/js/packages/KLaunchpad/kotlin")
+                into("$projectDir/build/js/packages/klaunchpad/kotlin")
             }
-            val path = "$projectDir/build/js/packages/KLaunchpad/".replace("\\", File.separator).replace("/", File.separator)
+            val path = "$projectDir/build/js/packages/klaunchpad/".replace("\\", File.separator).replace("/", File.separator)
             println()
             println("Ready to publish! When you are ready to publish, enter the following commands:")
             println()
@@ -124,7 +124,7 @@ tasks {
     val packageForPureJS by creating {
         dependsOn("jsBrowserProductionWebpack")
         doLast {
-            println("Pure JS library created at: $projectDir/build/distributions/KLaunchpad.js")
+            println("Pure JS library created at: $projectDir/build/distributions/klaunchpad.js")
         }
     }
 }

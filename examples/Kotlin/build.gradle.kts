@@ -12,7 +12,7 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
 
-    implementation("com.github.harry1453.klaunchpad:klaunchpad:master-SNAPSHOT")
+    implementation("com.github.harry1453.klaunchpad:KLaunchpad:master-SNAPSHOT")
 }
 
 tasks.test {

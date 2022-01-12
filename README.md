@@ -8,31 +8,66 @@ Theoretically support for other grid-based control surfaces such as MIDI fighter
 
 It is also a personal challenge to build one library and support as many languages as possible using one main library, and a testament to Kotlin's ability to do this. You can use KLaunchpad from a multitude of languages, not just Kotlin.
 
-## Using this Library (Installation)
+## Installation
 
-### Kotlin Multiplatform
+### Kotlin Multiplatform (Kotlin/JVM, Kotlin/JS, Kotlin/Native on Windows x64 only)
 
-TODO
+```kotlin
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+}
+```
+
+```kotlin
+commonMain {
+    dependencies {
+        implementation("com.github.harry1453.klaunchpad:klaunchpad:master-SNAPSHOT")
+    }
+}
+```
 
 ### On the JVM (Java, Kotlin, Groovy, Scala etc)
 
 Maven:
 
 ```xml
-TODO
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
+
+```xml
+<dependency>
+    <groupId>com.github.harry1453.klaunchpad</groupId>
+    <artifactId>klaunchpad</artifactId>
+    <version>master-SNAPSHOT</version>
+</dependency>
 ```
 
 Gradle:
 
-```groovy
-TODO
+```kotlin
+repositories {
+    mavenCentral()
+    maven("https://jitpack.io")
+}
 ```
 
-### In JavaScript (JavaScript, TypeScript
+```kotlin
+dependencies {
+    implementation("com.github.harry1453.klaunchpad:klaunchpad:master-SNAPSHOT")
+}
+```
 
-KLaunchpad supports usage **in the browser** via JavaScript. It does not support Node.js because Node does not implement the Web MIDI API.
+### In JavaScript (JavaScript / TypeScript)
 
-NPM: [`klauchpad`](https://www.npmjs.com/package/klaunchpad)
+KLaunchpad supports usage **in the browser** via JavaScript. It does not support Node.js because Node does not implement the Web MIDI API. (TODO this is possible with JZZ)
+
+NPM: [`klaunchpad`](https://www.npmjs.com/package/klaunchpad)
 
 Pure JS: `TODO`
 
@@ -58,22 +93,22 @@ Standard examples, available in every language that has examples:
 
 ### JVM (Java, Kotlin, Groovy, Scala etc)
 
-* [Java Examples](TODO)
-* [Kotlin Examples](src/jvmMain/kotlin/com/harry1453/klaunchpad/examples)
-* [Kotlin Applications](src/jvmMain/kotlin/com/harry1453/klaunchpad/examples/applications) - These are some more complex applications that make use of the launchpad. Not part of the standard examples.
+* [Java Examples](TODO) TODO
+* [Kotlin Examples](examples/Kotlin/src/main/kotlin)
+* [Kotlin Applications](examples/Kotlin/src/main/kotlin/applications) - These are some more complex applications that make use of the launchpad. Not part of the standard examples.
 
-### JS (JavaScript, TypeScript)
+### JS (JavaScript / TypeScript)
 
-* [React Examples](examples/js/react-examples)
-* [Pure JS Examples](examples/js/purejs-examples)
-* [Kotlin Examples](TODO)
+* [React Examples](examples/JS/react-examples)
+* [Pure JS Examples](examples/JS/purejs-examples)
+* [Kotlin Examples](TODO) TODO
 
-### Via a native shared library (C, Go, Rust, Python, etc)
+### Via a native shared library (C/C++, Go, Rust, Python, etc)
 
-* [C Examples](TODO)
-* [Go Examples](TODO)
-* [Rust Examples](TODO)
-* [Python Examples](TODO)
+* [C++ Examples](examples/C++) INCOMPLETE
+* [Go Examples](examples/Go) INCOMPLETE
+* [Rust Examples](TODO) TODO
+* [Python Examples](TODO) TODO
 
 ## Launchpad Support
 
@@ -96,9 +131,13 @@ Gen 3:
 - JVM: **Supported, using Java MIDI API**
 - JS: **Supported for Web both in NPM (eg. React) and Pure JS, using Web MIDI API**. Not supported in Node.JS / non web.
 - Native:
-  - Windows: **Supported, using `winmm.dll`**
+  - Windows x64: **Supported, using `winmm.dll`**
   - Other platforms: Not supported.
 
 ## Building KLaunchpad
 
-TODO
+Compile and run all tests: `gradlew build`
+
+Build a Pure JS minified bundle: `gradlew packageForPureJS` (The output will tell you where the bundle is)
+
+Package ready for deployment to NPM: `gradlew preparePublishNpm` (The output will tell you how to publish)
