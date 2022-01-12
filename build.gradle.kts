@@ -107,6 +107,10 @@ tasks {
                 from("$projectDir/README.md")
                 into("$projectDir/build/js/packages/KLaunchpad/")
             }
+            copy {
+                from("$projectDir/src/jsMain/resources/KLaunchpad.d.ts")
+                into("$projectDir/build/js/packages/KLaunchpad/kotlin")
+            }
             val path = "$projectDir/build/js/packages/KLaunchpad/".replace("\\", File.separator).replace("/", File.separator)
             println()
             println("Ready to publish! When you are ready to publish, enter the following commands:")
@@ -131,4 +135,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile> {
     kotlinOptions {
         freeCompilerArgs += listOf("-Xir-per-module", "-Xir-property-lazy-initialization")
     }
+}
+
+tasks.withType<Copy> {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
