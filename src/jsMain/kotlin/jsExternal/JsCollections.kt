@@ -1,21 +1,21 @@
 package jsExternal
 
-external interface JsIteratorResult<T> {
-    var done: Boolean
-    var value: T
+public external interface JsIteratorResult<T> {
+    public var done: Boolean?
+    public var value: T
 }
 
-external interface JsIterator<T> {
-    fun next(value: Any = definedExternally): JsIteratorResult<T>
+public external interface JsIterator<T> {
+    public fun next(value: Any = definedExternally): JsIteratorResult<T>
 }
 
-external interface JsMap<K, V> {
-    val size: Int
-    fun keys(): JsIterator<K>
-    fun values(): JsIterator<V>
+public external interface JsMap<K, V> {
+    public val size: Int
+    public fun keys(): JsIterator<K>
+    public fun values(): JsIterator<V>
 
-    fun clear()
-    fun delete(key: K): Boolean
-    fun get(key: K): V?
-    fun set(key: K, value: V)
+    public fun clear()
+    public fun delete(key: K): Boolean
+    public fun get(key: K): V?
+    public fun set(key: K, value: V)
 }

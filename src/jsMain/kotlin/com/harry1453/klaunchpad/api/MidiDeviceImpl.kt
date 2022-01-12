@@ -9,15 +9,15 @@ import toMap
 private data class MidiInputDeviceInfoImpl(
     override val name: String,
     override val version: String,
-    internal val device: MIDIInput
+    val device: MIDIInput
 ) : MidiInputDeviceInfo
 
-actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
+internal actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
     val midiAccess = window.navigator.requestMIDIAccess(midiOptions(sysex = true)).await()
     return midiAccess.inputs.toMap().map { (_, device) -> MidiInputDeviceInfoImpl(device.name.orEmpty(), device.version.orEmpty(), device) }
 }
 
-actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
+internal actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
     require(deviceInfo is MidiInputDeviceInfoImpl)
     return MidiInputDeviceImpl(deviceInfo.device.open().await())
 }
@@ -25,15 +25,15 @@ actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): Mid
 private data class MidiOutputDeviceInfoImpl(
     override val name: String,
     override val version: String,
-    internal val device: MIDIOutput
+    val device: MIDIOutput
 ) : MidiOutputDeviceInfo
 
-actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
+internal actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
     val midiAccess = window.navigator.requestMIDIAccess(midiOptions(sysex = true)).await()
     return midiAccess.outputs.toMap().map { (_, device) -> MidiOutputDeviceInfoImpl(device.name.orEmpty(), device.version.orEmpty(), device) }
 }
 
-actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
+internal actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
     require(deviceInfo is MidiOutputDeviceInfoImpl)
     return MidiOutputDeviceImpl(deviceInfo.device.open().await())
 }

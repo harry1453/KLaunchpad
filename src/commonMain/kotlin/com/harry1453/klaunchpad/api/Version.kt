@@ -1,3 +1,3 @@
 package com.harry1453.klaunchpad.api
 
-const val VERSION = "v0.1"
+public const val VERSION: String = "v0.1"

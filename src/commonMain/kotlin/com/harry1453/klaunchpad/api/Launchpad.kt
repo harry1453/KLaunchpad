@@ -15,11 +15,11 @@ import kotlin.jvm.JvmStatic
  * Launchpad Pro has no button in each of the corners of its grid. For these positions, [getPad]
  * will return null.
  */
-interface Launchpad : Closable {
+public interface Launchpad : Closable {
     /**
      * The number of columns in the grid.
      */
-    val gridColumnCount: Int
+    public val gridColumnCount: Int
 
     /**
      * The index of the first column of the grid, as some launchpads have buttons to the left of the grid.
@@ -28,12 +28,12 @@ interface Launchpad : Closable {
      *
      * The index of the last column can be taken as ([gridColumnCount] + [gridColumnCount] - 1).
      */
-    val gridColumnStart: Int
+    public val gridColumnStart: Int
 
     /**
      * The number of rows in the grid.
      */
-    val gridRowCount: Int
+    public val gridRowCount: Int
 
     /**
      * The index of the first row of the grid, as some launchpads have buttons underneath the grid.
@@ -42,7 +42,7 @@ interface Launchpad : Closable {
      *
      * The index of the last row can be taken as ([gridRowStart] + [gridRowCount] - 1).
      */
-    val gridRowStart: Int
+    public val gridRowStart: Int
 
     /**
      * Set a listener that will be called whenever a Pad's button state is updated.
@@ -51,42 +51,42 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setPadButtonListener(listener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)?)
+    public fun setPadButtonListener(listener: ((pad: Pad, pressed: Boolean, velocity: Byte) -> Unit)?)
 
     /**
      * Set [pad]'s LED to solid [color]. Passing [Color.BLACK] turns off the pad.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun setPadLight(pad: Pad?, color: Color)
+    public fun setPadLight(pad: Pad?, color: Color)
 
     /**
      * Turn off [pad]'s LED.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun clearPadLight(pad: Pad?) = setPadLight(pad, Color.BLACK)
+    public fun clearPadLight(pad: Pad?): Unit = setPadLight(pad, Color.BLACK)
 
     /**
      * Flash [pad]'s LED between [color1] and [color2], toggling between the two colors every half beat.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun flashPadLight(pad: Pad?, color1: Color, color2: Color)
+    public fun flashPadLight(pad: Pad?, color1: Color, color2: Color)
 
     /**
      * Flash [pad]'s LED between off and [color], toggling between the two states every half beat (Period of 1 beat).
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun flashPadLight(pad: Pad?, color: Color) = flashPadLight(pad, Color.BLACK, color)
+    public fun flashPadLight(pad: Pad?, color: Color): Unit = flashPadLight(pad, Color.BLACK, color)
 
     /**
      * Pulse [pad]'s LED between 25% and 100% brightness, with a period of 2 beats.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun pulsePadLight(pad: Pad?, color: Color)
+    public fun pulsePadLight(pad: Pad?, color: Color)
 
     /**
      * Set lots of Pad LEDs at once.
@@ -94,29 +94,29 @@ interface Launchpad : Closable {
      *
      * Skips a pad if it is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if it does not belong to this Launchpad.
      */
-    fun batchSetPadLights(padsAndColors: Map<Pad?, Color>)
+    public fun batchSetPadLights(padsAndColors: Map<Pad?, Color>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color
      * @param rowsAndColors A list of row indexes and the color that row should be set to.
      */
-    fun batchSetRowLights(rowsAndColors: Map<Int, Color>)
+    public fun batchSetRowLights(rowsAndColors: Map<Int, Color>)
 
     /**
      * Bulk update columns of Pad LEDs to be all one color
      * @param columnsAndColors A list of column indexes and the color that column should be set to.
      */
-    fun batchSetColumnLights(columnsAndColors: Map<Int, Color>)
+    public fun batchSetColumnLights(columnsAndColors: Map<Int, Color>)
 
     /**
      * Set all Pad LEDs to [color].
      */
-    fun setAllPadLights(color: Color)
+    public fun setAllPadLights(color: Color)
 
     /**
      * Turn off all Pad LEDs.
      */
-    fun clearAllPadLights() = setAllPadLights(Color.BLACK)
+    public fun clearAllPadLights(): Unit = setAllPadLights(Color.BLACK)
 
     /**
      * Scroll text across the grid.
@@ -130,12 +130,12 @@ interface Launchpad : Closable {
      * to its previous state. If [loop] is true, it will scroll the message again and again,
      * until stopped by calling [stopScrollingText]
      */
-    fun scrollText(message: String, color: Color, loop: Boolean = false)
+    public fun scrollText(message: String, color: Color, loop: Boolean = false)
 
     /**
      * Stop scrolling text across the grid and revert to the previous state.
      */
-    fun stopScrollingText()
+    public fun stopScrollingText()
 
     /**
      * Sets a listener that is called when a text scroll finishes.
@@ -144,7 +144,7 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setTextScrollFinishedListener(listener: (() -> Unit)?) // TODO not sure if this works...
+    public fun setTextScrollFinishedListener(listener: (() -> Unit)?) // TODO not sure if this works...
 
     /**
      * Get / Set Whether Auto Clocking is enabled.
@@ -157,40 +157,40 @@ interface Launchpad : Closable {
      *
      * Defaults to false.
      */
-    var autoClockEnabled: Boolean
+    public var autoClockEnabled: Boolean
 
     /**
      * Get / Set the tempo used for Auto Clocking.
      * Must be in range [autoClockTempoRange].
      */
-    var autoClockTempo: Int
+    public var autoClockTempo: Int
 
     /**
      * The range of supported values for [autoClockTempo].
      */
-    val autoClockTempoRange: IntRange
+    public val autoClockTempoRange: IntRange
 
     /**
      * This can be called to manually clock the launchpad, when [autoClockEnabled] is false.
      * This needs to be called 24 times per beat to keep the Launchpad in sync.
      */
-    fun clock()
+    public fun clock()
 
     /**
      * Force the launchpad to open its bootloader menu.
      */
-    fun enterBootloader()
+    public fun enterBootloader()
 
     /**
      * Get the Pad at position ([x], [y]) in the grid.
      * @return The Pad, or `null` if there is no pad in that position. Remember that it is not guaranteed that every grid position contains a pad, even if it lies within the boundaries of the grid.
      */
-    fun getPad(x: Int, y: Int): Pad?
+    public fun getPad(x: Int, y: Int): Pad?
 
     /**
      * The maximum number of faders the Launchpad can display at once
      */
-    val maxNumberOfFaders: Int
+    public val maxNumberOfFaders: Int
 
     /**
      * Switch to the Launchpad's fader view. This turns the main grid area into a bank of up to [maxNumberOfFaders].
@@ -208,14 +208,14 @@ interface Launchpad : Closable {
      *
      * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader color and an initial value (0-127) as the value.
      */
-    fun setupFaderView(faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false)
+    public fun setupFaderView(faders: Map<Int, Pair<Color, Byte>>, bipolar: Boolean = false)
 
     /**
      * Update a fader's value as displayed on the launchpad whilst in fader view.
      * @param faderIndex The index of the fader to update (0 to maxNumberOfFaders-1)
      * @param value The new value of the fader (-63 to 64 if in bipolar mode, 0-127 if in unipolar mode)
      */
-    fun updateFader(faderIndex: Int, value: Byte)
+    public fun updateFader(faderIndex: Int, value: Byte)
 
     /**
      * Sets a listener that is called when a fader is updated by the launchpad user.
@@ -224,12 +224,12 @@ interface Launchpad : Closable {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setFaderUpdateListener(listener: ((faderIndex: Int, newFaderValue: Byte) -> Unit)?)
+    public fun setFaderUpdateListener(listener: ((faderIndex: Int, newFaderValue: Byte) -> Unit)?)
 
     /**
      * Exit the fader view and return to the normal view, with full programmability.
      */
-    fun exitFaderView()
+    public fun exitFaderView()
 
     /**
      * Close the connection to the Launchpad, turning off all lights in the process.
@@ -240,7 +240,7 @@ interface Launchpad : Closable {
     TODO: device enquiry, version enquiry
      */
 
-    companion object {
+    public companion object {
         /**
          * Open a Launchpad MK2 instance that uses [inputDevice] and [outputDevice].
          *
@@ -249,7 +249,7 @@ interface Launchpad : Closable {
          * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
          */
         @JvmStatic
-        fun connectToLaunchpadMK2(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
+        public fun connectToLaunchpadMK2(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
             return LaunchpadMk2(MidiDeviceWrapper(inputDevice, outputDevice), false)
         }
 
@@ -263,28 +263,28 @@ interface Launchpad : Closable {
          * so there is no need to keep track of [inputDevice] and [outputDevice] and close them yourself.
          */
         @JvmStatic
-        fun connectToLaunchpadPro(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
+        public fun connectToLaunchpadPro(inputDevice: MidiInputDevice, outputDevice: MidiOutputDevice): Launchpad {
             return LaunchpadPro(MidiDeviceWrapper(inputDevice, outputDevice))
         }
 
         /**
          * Get a list of currently connected MIDI output devices
          */
-        suspend fun listMidiInputDevices(): List<MidiInputDeviceInfo> = listMidiInputDevicesImpl()
+        public suspend fun listMidiInputDevices(): List<MidiInputDeviceInfo> = listMidiInputDevicesImpl()
 
         /**
          * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevices]
          */
-        suspend fun openMidiInputDevice(deviceInfo: MidiInputDeviceInfo): MidiInputDevice = openMidiInputDeviceImpl(deviceInfo)
+        public suspend fun openMidiInputDevice(deviceInfo: MidiInputDeviceInfo): MidiInputDevice = openMidiInputDeviceImpl(deviceInfo)
 
         /**
          * Get a list of currently connected MIDI output devices
          */
-        suspend fun listMidiOutputDevices(): List<MidiOutputDeviceInfo> = listMidiOutputDevicesImpl()
+        public suspend fun listMidiOutputDevices(): List<MidiOutputDeviceInfo> = listMidiOutputDevicesImpl()
 
         /**
          * Open the MIDI device described by [deviceInfo], which must have been returned by [listMidiOutputDevices]
          */
-        suspend fun openMidiOutputDevice(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice = openMidiOutputDeviceImpl(deviceInfo)
+        public suspend fun openMidiOutputDevice(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice = openMidiOutputDeviceImpl(deviceInfo)
     }
 }

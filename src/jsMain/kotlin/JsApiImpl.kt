@@ -134,11 +134,11 @@ internal class JsLaunchpadImpl(private val launchpad: Launchpad) : JsLaunchpad {
     }
 }
 
-internal class JsMidiInputDeviceImpl(internal val device: MidiInputDevice) : JsMidiInputDevice
+internal class JsMidiInputDeviceImpl(val device: MidiInputDevice) : JsMidiInputDevice
 
-internal class JsMidiOutputDeviceImpl(internal val device: MidiOutputDevice) : JsMidiOutputDevice
+internal class JsMidiOutputDeviceImpl(val device: MidiOutputDevice) : JsMidiOutputDevice
 
-internal class JsMidiInputDeviceInfoImpl(internal val info: MidiInputDeviceInfo) : JsMidiInputDeviceInfo {
+internal class JsMidiInputDeviceInfoImpl(val info: MidiInputDeviceInfo) : JsMidiInputDeviceInfo {
     override var name
         get() = info.name
         set(_) = throw UnsupportedOperationException()
@@ -147,7 +147,7 @@ internal class JsMidiInputDeviceInfoImpl(internal val info: MidiInputDeviceInfo)
         set(_) = throw UnsupportedOperationException()
 }
 
-internal class JsMidiOutputDeviceInfoImpl(internal val info: MidiOutputDeviceInfo) : JsMidiOutputDeviceInfo {
+internal class JsMidiOutputDeviceInfoImpl(val info: MidiOutputDeviceInfo) : JsMidiOutputDeviceInfo {
     override var name
         get() = info.name
         set(_) = throw UnsupportedOperationException()

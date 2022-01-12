@@ -14,7 +14,7 @@ repositories {
 }
 
 kotlin {
-//    explicitApi() TODO
+    explicitApi()
 
     jvm {
         compilations.forEach {

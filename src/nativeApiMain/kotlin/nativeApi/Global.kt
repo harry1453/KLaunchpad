@@ -13,19 +13,19 @@ import nativeApi.utils.toObject
 // "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.15.26726\bin\Hostx64\x64\lib" /def:KLaunchpad.def /out:KLaunchpad.lib
 
 // Global arena to store stuff sent to C in
-val GlobalMemScope = Arena() // TODO clean up anything sent to C
+internal val GlobalMemScope = Arena() // TODO clean up anything sent to C
 
 // Library Info
 
 @CName("KLaunchpad_version")
-fun version(): CPointer<ByteVar> = externalFunction {
-    return VERSION.cstr.getPointer(GlobalMemScope)
+public fun version(): CPointer<ByteVar> = externalFunction {
+    return VERSION.cstr.getPointer(GlobalMemScope) // TODO this memory is never freed...
 }
 
 // Global Functions
 
 @CName("KLaunchpad_connectToLaunchpadMK2")
-fun connectToLaunchpadMK2(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaquePointer): COpaquePointer = externalFunction {
+public fun connectToLaunchpadMK2(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaquePointer): COpaquePointer = externalFunction {
         val inputDevice = inputDevicePtr.toObject<MidiInputDevice>()
         val outputDevice = outputDevicePtr.toObject<MidiOutputDevice>()
         val launchpad = Launchpad.connectToLaunchpadMK2(inputDevice, outputDevice)
@@ -33,7 +33,7 @@ fun connectToLaunchpadMK2(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaq
     }
 
 @CName("KLaunchpad_connectToLaunchpadPro")
-fun connectToLaunchpadPro(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaquePointer): COpaquePointer = externalFunction {
+public fun connectToLaunchpadPro(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaquePointer): COpaquePointer = externalFunction {
         val inputDevice = inputDevicePtr.toObject<MidiInputDevice>()
         val outputDevice = outputDevicePtr.toObject<MidiOutputDevice>()
         val launchpad = Launchpad.connectToLaunchpadPro(inputDevice, outputDevice)
@@ -41,21 +41,21 @@ fun connectToLaunchpadPro(inputDevicePtr: COpaquePointer, outputDevicePtr: COpaq
     }
 
 @CName("KLaunchpad_listMidiInputDevices")
-fun listMidiInputDevicesExt(lengthPtr: CPointer<UIntVar>): CPointer<COpaquePointerVar> = externalFunction {
+public fun listMidiInputDevicesExt(lengthPtr: CPointer<UIntVar>): CPointer<COpaquePointerVar> = externalFunction {
         val opaquePointers = runBlocking { listMidiInputDevices() }.map { StableRef.create(it).asCPointer() }
         lengthPtr.pointed.value = opaquePointers.size.toUInt()
         return createValues<COpaquePointerVar>(opaquePointers.size) { index -> this.value = opaquePointers[index] }.getPointer(GlobalMemScope)
     }
 
 @CName("KLaunchpad_listMidiOutputDevices")
-fun listMidiOutputDevicesExt(lengthPtr: CPointer<UIntVar>): CPointer<COpaquePointerVar> = externalFunction {
+public fun listMidiOutputDevicesExt(lengthPtr: CPointer<UIntVar>): CPointer<COpaquePointerVar> = externalFunction {
         val opaquePointers = runBlocking { listMidiOutputDevices() }.map { StableRef.create(it).asCPointer() }
         lengthPtr.pointed.value = opaquePointers.size.toUInt()
         return createValues<COpaquePointerVar>(opaquePointers.size) { index -> this.value = opaquePointers[index] }.getPointer(GlobalMemScope)
     }
 
 @CName("KLaunchpad_openMidiInputDevice")
-fun openMidiInputDeviceExt(infoPtr: COpaquePointer): COpaquePointer = externalFunction {
+public fun openMidiInputDeviceExt(infoPtr: COpaquePointer): COpaquePointer = externalFunction {
     val inputDeviceInfo = infoPtr.toObject<MidiInputDeviceInfo>()
     val inputDevice = try {
         runBlocking { openMidiInputDevice(inputDeviceInfo) }
@@ -66,7 +66,7 @@ fun openMidiInputDeviceExt(infoPtr: COpaquePointer): COpaquePointer = externalFu
 }
 
 @CName("KLaunchpad_openMidiOutputDevice")
-fun openMidiOutputDeviceExt(infoPtr: COpaquePointer): COpaquePointer = externalFunction {
+public fun openMidiOutputDeviceExt(infoPtr: COpaquePointer): COpaquePointer = externalFunction {
     val outputDeviceInfo = infoPtr.toObject<MidiOutputDeviceInfo>()
     val outputDevice = try {
         runBlocking { openMidiOutputDevice(outputDeviceInfo) }

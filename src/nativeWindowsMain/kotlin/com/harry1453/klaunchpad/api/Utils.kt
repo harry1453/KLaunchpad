@@ -3,7 +3,7 @@ package com.harry1453.klaunchpad.api
 /**
  * Convert an LE Int to a Byte Array
  */
-fun Int.toBytesLE(): ByteArray {
+internal fun Int.toBytesLE(): ByteArray {
     val target = ByteArray(4)
     for (index in 0..3) {
         target[index] = (this shr 8 * index and 0xFF).toByte()
@@ -14,7 +14,7 @@ fun Int.toBytesLE(): ByteArray {
 /**
  * Convert a Byte Array to an LE Int
  */
-fun ByteArray.toUintLE(): UInt { // TODO length 0-4, toUint
+internal fun ByteArray.toUintLE(): UInt { // TODO length 0-4, toUint
     val bytes = this
     return ((bytes[0].toUInt() and 0xFF.toUInt())
         or (bytes[1].toUInt() and 0xFF.toUInt() shl 8)

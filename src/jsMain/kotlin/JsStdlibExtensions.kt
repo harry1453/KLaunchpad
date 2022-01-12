@@ -1,6 +1,6 @@
 import jsExternal.JsMap
 
-fun <K, V> JsMap<K, V>.toMap(): Map<K, V> {
+internal fun <K, V> JsMap<K, V>.toMap(): Map<K, V> {
     return object : AbstractMap<K, V>() {
         override val entries = object : AbstractSet<Map.Entry<K, V>>() {
             override val size: Int
@@ -14,7 +14,7 @@ fun <K, V> JsMap<K, V>.toMap(): Map<K, V> {
                     override fun computeNext() {
                         val nextKey = keyIterator.next()
                         val nextValue = valueIterator.next()
-                        if (nextKey.done || nextValue.done) {
+                        if (nextKey.done == true || nextValue.done == true) {
                             done()
                             return
                         }

@@ -4,7 +4,7 @@ import com.harry1453.klaunchpad.api.Launchpad
 import com.harry1453.klaunchpad.api.MidiDevice
 import kotlinx.coroutines.*
 
-abstract class AbstractLaunchpad internal constructor(internal val midiDevice: MidiDevice) : Launchpad {
+internal abstract class AbstractLaunchpad internal constructor(internal val midiDevice: MidiDevice) : Launchpad {
     init {
         midiDevice.setMessageListener { onMidiMessage(it) }
     }

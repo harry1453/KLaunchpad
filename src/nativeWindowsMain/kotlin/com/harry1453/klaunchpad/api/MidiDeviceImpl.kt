@@ -3,17 +3,17 @@ package com.harry1453.klaunchpad.api
 import kotlinx.cinterop.*
 import platform.windows.*
 
-class Holder<T> {
+internal class Holder<T> {
     var value: T? = null
 }
 
 private data class MidiInputDeviceInfoImpl(
     override val name: String,
     override val version: String,
-    internal val deviceID: UInt
+    val deviceID: UInt
 ) : MidiInputDeviceInfo
 
-actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
+internal actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
     val inputDeviceCount = WindowsMidiApi.midiInGetNumDevs!!()
     val list = mutableListOf<MidiInputDeviceInfo>()
     memScoped {
@@ -27,7 +27,7 @@ actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
     return list
 }
 
-actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
+internal actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
     require(deviceInfo is MidiInputDeviceInfoImpl)
 
     val midiDeviceHolder = Holder<MidiInputDeviceImpl>()
@@ -47,10 +47,10 @@ actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): Mid
 private data class MidiOutputDeviceInfoImpl(
     override val name: String,
     override val version: String,
-    internal val deviceID: UInt
+    val deviceID: UInt
 ) : MidiOutputDeviceInfo
 
-actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
+internal actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
     val outputDeviceCount = WindowsMidiApi.midiOutGetNumDevs!!()
     val list = mutableListOf<MidiOutputDeviceInfo>()
     memScoped {
@@ -64,7 +64,7 @@ actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
     return list
 }
 
-actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
+internal actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
     require(deviceInfo is MidiOutputDeviceInfoImpl)
 
     val device = nativeHeap.alloc<HMIDIOUTVar>()
@@ -74,7 +74,7 @@ actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): M
 }
 
 @Suppress("UNUSED_PARAMETER")
-fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: DWORD_PTR, dwParam1: DWORD_PTR, dwParam2: DWORD_PTR) {
+internal fun midiInCallback(hmi: HMIDIIN, wMsg: UINT, dwInstance: DWORD_PTR, dwParam1: DWORD_PTR, dwParam2: DWORD_PTR) {
     initRuntimeIfNeeded()
     val midiDeviceHolder = dwInstance.toLong().toCPointer<CPointed>()!!.asStableRef<Holder<MidiInputDeviceImpl>>().get()
     if (midiDeviceHolder.value == null) return

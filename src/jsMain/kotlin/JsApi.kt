@@ -15,7 +15,7 @@ import kotlin.js.json
  */
 @JsExport
 @JsName("connectToLaunchpadMK2")
-fun connectToLaunchpadMK2(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
+public fun connectToLaunchpadMK2(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
     require(inputDevice is JsMidiInputDeviceImpl)
     require(outputDevice is JsMidiOutputDeviceImpl)
     return JsLaunchpadImpl(Launchpad.connectToLaunchpadMK2(inputDevice.device, outputDevice.device))
@@ -32,7 +32,7 @@ fun connectToLaunchpadMK2(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOu
  */
 @JsExport
 @JsName("connectToLaunchpadPro")
-fun connectToLaunchpadPro(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
+public fun connectToLaunchpadPro(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOutputDevice): JsLaunchpad {
     require(inputDevice is JsMidiInputDeviceImpl)
     require(outputDevice is JsMidiOutputDeviceImpl)
     return JsLaunchpadImpl(Launchpad.connectToLaunchpadPro(inputDevice.device, outputDevice.device))
@@ -43,7 +43,7 @@ fun connectToLaunchpadPro(inputDevice: JsMidiInputDevice, outputDevice: JsMidiOu
  */
 @JsExport
 @JsName("listMidiInputDevices")
-fun listMidiInputDevices(): Promise<Array<out JsMidiInputDeviceInfo>> = GlobalScope.async {
+public fun listMidiInputDevices(): Promise<Array<out JsMidiInputDeviceInfo>> = GlobalScope.async {
     Launchpad.listMidiInputDevices()
         .map { JsMidiInputDeviceInfoImpl(it) }
         .toTypedArray()
@@ -54,7 +54,7 @@ fun listMidiInputDevices(): Promise<Array<out JsMidiInputDeviceInfo>> = GlobalSc
  */
 @JsExport
 @JsName("openMidiInputDevice")
-fun openMidiInputDevice(deviceInfo: JsMidiInputDeviceInfo): Promise<JsMidiInputDevice> {
+public fun openMidiInputDevice(deviceInfo: JsMidiInputDeviceInfo): Promise<JsMidiInputDevice> {
     require(deviceInfo is JsMidiInputDeviceInfoImpl)
     return GlobalScope.async {
         JsMidiInputDeviceImpl(Launchpad.openMidiInputDevice(deviceInfo.info))
@@ -66,7 +66,7 @@ fun openMidiInputDevice(deviceInfo: JsMidiInputDeviceInfo): Promise<JsMidiInputD
  */
 @JsExport
 @JsName("listMidiOutputDevices")
-fun listMidiOutputDevices(): Promise<Array<out JsMidiOutputDeviceInfo>> = GlobalScope.async {
+public fun listMidiOutputDevices(): Promise<Array<out JsMidiOutputDeviceInfo>> = GlobalScope.async {
     Launchpad.listMidiOutputDevices()
         .map { JsMidiOutputDeviceInfoImpl(it) }
         .toTypedArray()
@@ -77,7 +77,7 @@ fun listMidiOutputDevices(): Promise<Array<out JsMidiOutputDeviceInfo>> = Global
  */
 @JsExport
 @JsName("openMidiOutputDevice")
-fun openMidiOutputDevice(deviceInfo: JsMidiOutputDeviceInfo): Promise<JsMidiOutputDevice> {
+public fun openMidiOutputDevice(deviceInfo: JsMidiOutputDeviceInfo): Promise<JsMidiOutputDevice> {
     require(deviceInfo is JsMidiOutputDeviceInfoImpl)
     return GlobalScope.async {
         JsMidiOutputDeviceImpl(Launchpad.openMidiOutputDevice(deviceInfo.info))
@@ -86,11 +86,11 @@ fun openMidiOutputDevice(deviceInfo: JsMidiOutputDeviceInfo): Promise<JsMidiOutp
 
 @JsExport
 @JsName("Launchpad")
-external interface JsLaunchpad {
+public external interface JsLaunchpad {
     /**
      * The number of columns in the grid.
      */
-    var gridColumnCount: Int
+    public var gridColumnCount: Int
 
     /**
      * The index of the first column of the grid, as some launchpads have buttons to the left of the grid.
@@ -99,12 +99,12 @@ external interface JsLaunchpad {
      *
      * The index of the last column can be taken as ([gridColumnStart] + [gridColumnCount] - 1).
      */
-    var gridColumnStart: Int
+    public var gridColumnStart: Int
 
     /**
      * The number of rows in the grid.
      */
-    var gridRowCount: Int
+    public var gridRowCount: Int
 
     /**
      * The index of the first row of the grid, as some launchpads have buttons underneath the grid.
@@ -113,33 +113,33 @@ external interface JsLaunchpad {
      *
      * The index of the last row can be taken as ([gridRowStart] + [gridRowCount] - 1).
      */
-    var gridRowStart: Int
+    public var gridRowStart: Int
 
     /**
      * Set a listener that will be called whenever a Pad's button state is updated.
      *
      * [listener] takes the Pad that was udpated, whether it is currently pressed, and the velocity it was pressed with, if it was pressed. The velocity is on a scale of 0-127.
      */
-    fun setPadButtonListener(listener: ((pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)?)
+    public fun setPadButtonListener(listener: ((pad: JsPad, pressed: Boolean, velocity: Byte) -> Unit)?)
 
     /**
      * Set [pad]'s LED to solid [color]. Passing [BLACK] turns off the pad.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun setPadLight(pad: JsPad?, color: JsColor)
+    public fun setPadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Turn off [pad]'s LED.
      */
-    fun clearPadLight(pad: JsPad?)
+    public fun clearPadLight(pad: JsPad?)
 
     /**
      * Flash [pad]'s LED between [color1] and [color2], toggling between the two colors every half beat.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun flashPadLight(pad: JsPad?, color1: JsColor, color2: JsColor)
+    public fun flashPadLight(pad: JsPad?, color1: JsColor, color2: JsColor)
 
     /**
      * Flash [pad]'s LED between off and [color], toggling between the two states every half beat.
@@ -147,14 +147,14 @@ external interface JsLaunchpad {
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
     @JsName("flashPadLightOnAndOff")
-    fun flashPadLight(pad: JsPad?, color: JsColor)
+    public fun flashPadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Pulse [pad]'s LED between 25% and 100% brightness, with a period of 2 beats.
      *
      * No-op if the pad is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if the pad does not belong to this Launchpad.
      */
-    fun pulsePadLight(pad: JsPad?, color: JsColor)
+    public fun pulsePadLight(pad: JsPad?, color: JsColor)
 
     /**
      * Set lots of Pad LEDs at once.
@@ -162,29 +162,29 @@ external interface JsLaunchpad {
      *
      * Skips a pad if it is null (this prevents you from having to check for if a pad obtained by [getPad] is null) or if it does not belong to this Launchpad.
      */
-    fun batchSetPadLights(padsAndColors: JsMap<JsPad?, JsColor>)
+    public fun batchSetPadLights(padsAndColors: JsMap<JsPad?, JsColor>)
 
     /**
      * Bulk update rows of Pad LEDs to be all one color
      * @param rowsAndColors A list of row indexes and the color that row should be set to.
      */
-    fun batchSetRowLights(rowsAndColors: JsMap<Int, JsColor>)
+    public fun batchSetRowLights(rowsAndColors: JsMap<Int, JsColor>)
 
     /**
      * Bulk update columns of Pad LEDs to be all one color
      * @param columnsAndColors A list of column indexes and the color that column should be set to.
      */
-    fun batchSetColumnLights(columnsAndColors: JsMap<Int, JsColor>)
+    public fun batchSetColumnLights(columnsAndColors: JsMap<Int, JsColor>)
 
     /**
      * Set all Pad LEDs to [color].
      */
-    fun setAllPadLights(color: JsColor)
+    public fun setAllPadLights(color: JsColor)
 
     /**
      * Turn off all Pad LEDs.
      */
-    fun clearAllPadLights()
+    public fun clearAllPadLights()
 
     /**
      * Scroll text across the grid.
@@ -198,12 +198,12 @@ external interface JsLaunchpad {
      * to its previous state. If [loop] is true, it will scroll the message again and again,
      * until stopped by calling [stopScrollingText]
      */
-    fun scrollText(message: String, color: JsColor, loop: Boolean?)
+    public fun scrollText(message: String, color: JsColor, loop: Boolean?)
 
     /**
      * Stop scrolling text across the grid and revert to the previous state.
      */
-    fun stopScrollingText()
+    public fun stopScrollingText()
 
     /**
      * Sets a listener that is called when a text scroll finishes.
@@ -212,7 +212,7 @@ external interface JsLaunchpad {
      *
      * [listener] may be invoked on any thread.
      */
-    fun setTextScrollFinishedListener(listener: (() -> Unit)?)
+    public fun setTextScrollFinishedListener(listener: (() -> Unit)?)
 
     /**
      * Get / Set Whether Auto Clocking is enabled.
@@ -225,40 +225,40 @@ external interface JsLaunchpad {
      *
      * Defaults to false.
      */
-    var autoClockEnabled: Boolean?
+    public var autoClockEnabled: Boolean?
 
     /**
      * Get / Set the tempo used for Auto Clocking.
      * Must be in range [autoClockTempoRange].
      */
-    var autoClockTempo: Int
+    public var autoClockTempo: Int
 
     /**
      * The range of supported values for [autoClockTempo].
      */
-    var autoClockTempoRange: IntRange // TODO can't use IntRange
+    public var autoClockTempoRange: IntRange // TODO can't use IntRange
 
     /**
      * This can be called to manually clock the launchpad, when [autoClockEnabled] is false.
      * This needs to be called 24 times per beat to keep the Launchpad in sync.
      */
-    fun clock()
+    public fun clock()
 
     /**
      * Force the launchpad to open its bootloader menu.
      */
-    fun enterBootloader()
+    public fun enterBootloader()
 
     /**
      * Get the Pad at position ([x], [y]) in the grid.
      * @return The Pad, or `null` if there is no pad in that position. Remember that it is not guaranteed that every grid position contains a pad, even if it lies within the boundaries of the grid.
      */
-    fun getPad(x: Int, y: Int): JsPad?
+    public fun getPad(x: Int, y: Int): JsPad?
 
     /**
      * The maximum number of faders the Launchpad can display at once
      */
-    var maxNumberOfFaders: Int
+    public var maxNumberOfFaders: Int
 
     /**
      * Switch to the Launchpad's fader view. This turns the main grid area into a bank of up to [maxNumberOfFaders].
@@ -276,77 +276,77 @@ external interface JsLaunchpad {
      *
      * @param faders A map of faders with the fader index (0 to maxNumberOfFaders-1) as the key and a pair of a fader color and an initial value (0-127) as the value.
      */
-    fun setupFaderView(faders: JsMap<Int, JsFaderSettings>, bipolar: Boolean?)
+    public fun setupFaderView(faders: JsMap<Int, JsFaderSettings>, bipolar: Boolean?)
 
     /**
      * Update a fader's value as displayed on the launchpad whilst in fader view.
      * @param faderIndex The index of the fader to update (0 to maxNumberOfFaders-1)
      * @param value The new value of the fader (-63 to 64 if in bipolar mode, 0-127 if in unipolar mode)
      */
-    fun updateFader(faderIndex: Int, value: Byte)
+    public fun updateFader(faderIndex: Int, value: Byte)
 
     /**
      * Sets a listener that is called when a fader is updated by the launchpad user.
      *
      * The launchpad may, in order to emulate a smooth fade, call this several times for one user action.
      */
-    fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?)
+    public fun setFaderUpdateListener(listener: ((faderIndex: Int, faderValue: Byte) -> Unit)?)
 
     /**
      * Exit the fader view and return to the normal view, with full programmability.
      */
-    fun exitFaderView()
+    public fun exitFaderView()
 
     /**
      * Close the connection to the Launchpad, turning off all lights in the process.
      */
-    fun close()
+    public fun close()
 }
 
 @JsExport
 @JsName("MidiInputDevice")
-external interface JsMidiInputDevice
+public external interface JsMidiInputDevice
 
 @JsExport
 @JsName("MidiOutputDevice")
-external interface JsMidiOutputDevice
+public external interface JsMidiOutputDevice
 
 @JsExport
 @JsName("MidiInputDeviceInfo")
-external interface JsMidiInputDeviceInfo {
-    var name: String
-    var version: String
+public external interface JsMidiInputDeviceInfo {
+    public var name: String
+    public var version: String
 }
 
 @JsExport
 @JsName("MidiOutputDeviceInfo")
-external interface JsMidiOutputDeviceInfo {
-    var name: String
-    var version: String
+public external interface JsMidiOutputDeviceInfo {
+    public var name: String
+    public var version: String
 }
 
 @JsExport
 @JsName("Pad")
-external interface JsPad {
-    var gridX: Int
-    var gridY: Int
+public external interface JsPad {
+    public var gridX: Int
+    public var gridY: Int
 }
 
 @JsExport
 @JsName("BLACK")
-val BLACK = json("r" to 0, "g" to 0, "b" to 0).unsafeCast<JsColor>()
+public val BLACK: JsColor = json("r" to 0, "g" to 0, "b" to 0).unsafeCast<JsColor>()
 
 @JsExport
 @JsName("Color")
-external interface JsColor {
-    var r: Int
-    var g: Int
-    var b: Int
+public external interface JsColor {
+    public var r: Int
+    public var g: Int
+    public var b: Int
 }
 
 @JsExport
 @JsName("FaderSettings")
-external interface JsFaderSettings {
-    var color: JsColor
-    var initialValue: Int
+public external interface JsFaderSettings {
+    public var color: JsColor
+    public var initialValue: Int
 }

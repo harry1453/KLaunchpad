@@ -9,17 +9,17 @@ import javax.sound.midi.MidiDevice as JvmMidiDevice
 private data class MidiInputDeviceInfoImpl(
     override val name: String,
     override val version: String,
-    internal val device: JvmMidiDevice
+    val device: JvmMidiDevice
 ) : MidiInputDeviceInfo
 
-actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
+internal actual suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo> {
     return MidiSystem.getMidiDeviceInfo()
         .map { MidiSystem.getMidiDevice(it) }
         .filter { it.maxTransmitters != 0 }
         .map { MidiInputDeviceInfoImpl(it.deviceInfo.name, it.deviceInfo.version, it) }
 }
 
-actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
+internal actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): MidiInputDevice {
     require(deviceInfo is MidiInputDeviceInfoImpl)
 
     try {
@@ -34,17 +34,17 @@ actual suspend fun openMidiInputDeviceImpl(deviceInfo: MidiInputDeviceInfo): Mid
 private data class MidiOutputDeviceInfoImpl(
     override val name: String,
     override val version: String,
-    internal val device: JvmMidiDevice
+    val device: JvmMidiDevice
 ) : MidiOutputDeviceInfo
 
-actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
+internal actual suspend fun listMidiOutputDevicesImpl(): List<MidiOutputDeviceInfo> {
     return MidiSystem.getMidiDeviceInfo()
         .map { MidiSystem.getMidiDevice(it) }
         .filter { it.maxReceivers != 0 }
         .map { MidiOutputDeviceInfoImpl(it.deviceInfo.name, it.deviceInfo.version, it) }
 }
 
-actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
+internal actual suspend fun openMidiOutputDeviceImpl(deviceInfo: MidiOutputDeviceInfo): MidiOutputDevice {
     require(deviceInfo is MidiOutputDeviceInfoImpl)
 
     try {

@@ -8,13 +8,13 @@ import nativeApi.utils.externalFunctionWithLaunchpad
 // Destructors
 
 @CName("KLaunchpad_isClosed")
-fun isClosed(launchpadPtr: COpaquePointer): Boolean =
+public fun isClosed(launchpadPtr: COpaquePointer): Boolean =
     externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
         return launchpad.isClosed
     }
 
 @CName("KLaunchpad_closeLaunchpad")
-fun closeLaunchpad(launchpadPtr: COpaquePointer) =
+public fun closeLaunchpad(launchpadPtr: COpaquePointer): Unit =
     externalFunctionWithLaunchpad(launchpadPtr) { launchpad ->
         launchpad.close()
         launchpadPtr.asStableRef<Launchpad>().dispose()

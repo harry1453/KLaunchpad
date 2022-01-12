@@ -1,24 +1,24 @@
 package com.harry1453.klaunchpad.api
 
-interface MidiInputDeviceInfo {
-    val name: String
-    val version: String
+public interface MidiInputDeviceInfo {
+    public val name: String
+    public val version: String
 }
 
 /**
  * Open this MIDI Output device.
  */
-suspend fun MidiInputDeviceInfo.open(): MidiInputDevice = Launchpad.openMidiInputDevice(this)
+public suspend fun MidiInputDeviceInfo.open(): MidiInputDevice = Launchpad.openMidiInputDevice(this)
 
-interface MidiOutputDeviceInfo {
-    val name: String
-    val version: String
+public interface MidiOutputDeviceInfo {
+    public val name: String
+    public val version: String
 }
 
 /**
  * Open this MIDI Output device.
  */
-suspend fun MidiOutputDeviceInfo.open(): MidiOutputDevice = Launchpad.openMidiOutputDevice(this) // TODO make this part of the interface & the main way of doing it
+public suspend fun MidiOutputDeviceInfo.open(): MidiOutputDevice = Launchpad.openMidiOutputDevice(this) // TODO make this part of the interface & the main way of doing it
 
 @Deprecated("Use separate MidiInputDevice and MidiOutputDevice")
 internal interface MidiDevice : Closable {
@@ -67,12 +67,12 @@ internal class MidiDeviceWrapper(private val inputDevice: MidiInputDevice, priva
     }
 }
 
-interface MidiInputDevice: Closable {
-    fun setMessageListener(messageListener: (message: ByteArray) -> Unit)
+public interface MidiInputDevice: Closable {
+    public fun setMessageListener(messageListener: (message: ByteArray) -> Unit)
 }
 
-interface MidiOutputDevice: Closable {
-    fun sendMessage(message: ByteArray)
+public interface MidiOutputDevice: Closable {
+    public fun sendMessage(message: ByteArray)
 }
 
 internal expect suspend fun listMidiInputDevicesImpl(): List<MidiInputDeviceInfo>
