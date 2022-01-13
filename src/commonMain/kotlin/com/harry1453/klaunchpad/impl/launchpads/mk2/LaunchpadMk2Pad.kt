@@ -17,7 +17,7 @@ import com.harry1453.klaunchpad.api.Pad
  *
  * where A1 is (0, 0) and H8 is (7, 7)
  */
-internal enum class LaunchpadMk2Pad : Pad {
+public enum class LaunchpadMk2Pad : Pad {
     T1, T2, T3, T4, T5, T6, T7, T8,
     H1, H2, H3, H4, H5, H6, H7, H8, R1,
     G1, G2, G3, G4, G5, G6, G7, G8, R2,
@@ -31,9 +31,9 @@ internal enum class LaunchpadMk2Pad : Pad {
 
     override val gridX: Int
     override val gridY: Int
-    val sessionMidiCode: Int
-    val userMidiCode: Int
-    val isControlChange: Boolean
+    internal val sessionMidiCode: Int
+    internal val userMidiCode: Int
+    internal val isControlChange: Boolean
 
     init {
         // Name parser determines MIDI codes
@@ -81,27 +81,23 @@ internal enum class LaunchpadMk2Pad : Pad {
         return name
     }
 
-    companion object {
+    public companion object {
         internal val CONTROL_CHANGE_PADS: Map<Int, Pad> = values()
             .filter { it.isControlChange }
-            .map { it.sessionMidiCode to it }
-            .toMap()
+            .associateBy { it.sessionMidiCode }
 
         internal val SESSION_MODE_PADS: Map<Int, Pad> = values()
             .filter { !it.isControlChange }
-            .map { it.sessionMidiCode to it }
-            .toMap()
+            .associateBy { it.sessionMidiCode }
 
         internal val USER_MODE_PADS: Map<Int, Pad> = values()
             .filter { !it.isControlChange }
-            .map { it.userMidiCode to it }
-            .toMap()
+            .associateBy { it.userMidiCode }
 
         private val GRID_PADS: Map<Pair<Int, Int>, Pad> = values()
-            .map { Pair(it.gridX, it.gridY) to it }
-            .toMap()
+            .associateBy { Pair(it.gridX, it.gridY) }
 
-        fun findPad(gridX: Int, gridY: Int): Pad? {
+        public fun findPad(gridX: Int, gridY: Int): Pad? {
             return GRID_PADS[Pair(gridX, gridY)]
         }
     }

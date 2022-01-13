@@ -85,9 +85,9 @@ Standard examples, available in every language that has examples:
 * Enter Bootloader - Forces the launchpad to open its bootloader menu.
 * Faders - The launchpad acts as a bank of faders. Demonstrates using the native fader mode of the Launchpad. Two modes: Unipolar and Bipolar faders.
 * Flash Pressed Pad - The pressed pad will flash between red and blue with a period of 1 second. Demonstrates 2-colour flashing.
-* Hello World - The text "Hello World" will scroll across the launchpad. Demonstrates the Launchpad's native text scrolling.
+* Hello World - The text "Hello World" will scroll across the launchpad. Demonstrates the Launchpad's native text scrolling, as well as how to update the scrolling speed mid-text.
 * Light All When Pressed - Pressing a pad will light all pads in a random color. Demonstrates updating every pad at once.
-* Light Around Pressed Pad - Pressing a pad will light it and the pads next to it in a random color. Demonstrates using the grid coordinate system to find pads.
+* Light Around Pressed Pad - Pressing a pad will light it and the pads next to it in a random color. Demonstrates using the grid coordinate system to find pads, as well as batch updating pads.
 * Light Pressed Coordinate - Pressing a pad will light its row and its column in a random color. Demonstrates updating a whole row or column of pads at once.
 * Light Pressed Pad - Pressing a pad will light it in a random color. Demonstrates updating pads and listening for pad updates.
 
@@ -101,7 +101,6 @@ Standard examples, available in every language that has examples:
 
 * [React Examples](examples/JS/react-examples)
 * [Pure JS Examples](examples/JS/purejs-examples)
-* [Kotlin Examples](TODO) TODO
 
 ### Via a native shared library (C/C++, Go, Rust, Python, etc)
 

@@ -54,9 +54,9 @@ kotlin {
             languageSettings {
                 languageSettings.optIn("kotlin.ExperimentalStdlibApi")
                 languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
-                languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
                 languageSettings.optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
                 languageSettings.optIn("kotlin.js.ExperimentalJsExport")
+                languageSettings.optIn("kotlinx.coroutines.DelicateCoroutinesApi")
             }
         }
 
