@@ -1,4 +1,4 @@
-package com.harry1453.klaunchpad.examples.applications.passcode
+package applications.passcode
 
 class CircularFifoList<T: Any>(private val array: Array<T?>) : AbstractMutableList<T>() {
     override var size = 0
